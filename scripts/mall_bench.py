@@ -140,6 +140,9 @@ def smoke():
     final = None
     for _ in range(150):
         st, r = c.request("GET", f"/api/orders/{sk_order_no}")
+        if r["code"] == 400 and "订单不存在" in (r.get("message") or ""):
+            time.sleep(0.2)  # MQ 消费者订阅就绪前消息未消费，继续轮询
+            continue
         assert r["code"] == 0, r
         status = r["data"]["order"]["status"]
         if status != "PROCESSING":
@@ -154,6 +157,24 @@ def smoke():
     st, r = c.request("GET", f"/api/products/{pid}")
     db_stock = r["data"]["stock"]
     print(f"[12] 分桶余量=9 ✓  DB库存={db_stock}（已同步扣1）✓")
+
+    # ---- M2.2 Seata AT 试点：跨服务扣减的全局回滚 ----
+    # 低库存 SKU(id=4, stock=1)：第1件扣减成功 -> 第2件失败 -> 全局回滚回补第1件
+    low = 4
+    st, r = c.request("GET", f"/api/products/{low}")
+    assert r["code"] == 0, r
+    stock_before = r["data"]["stock"]
+
+    st, r = c.request("POST", "/api/orders",
+                      {"addressId": address_id,
+                       "items": [{"productId": low, "quantity": 1},
+                                 {"productId": low, "quantity": 1}]})
+    assert r["code"] == 409 and "库存不足" in r["message"], r
+    print(f"[13] Seata AT 全局回滚 OK（跨服务扣减已回补）✓")
+
+    st, r = c.request("GET", f"/api/products/{low}")
+    assert r["code"] == 0 and r["data"]["stock"] == stock_before, (stock_before, r)
+    print(f"[14] 库存回补一致性 OK stock={r['data']['stock']} ✓")
     c.close()
     print("=== 冒烟全部通过 ✓ ===")
 

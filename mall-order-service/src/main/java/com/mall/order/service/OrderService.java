@@ -17,6 +17,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.seata.core.context.RootContext;
+import io.seata.spring.annotation.GlobalTransactional;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +43,11 @@ public class OrderService {
     public record OrderItemInput(Long productId, int quantity) {
     }
 
-    @Transactional
+    /**
+     * M2.2：Seata AT 全局事务（TM=order，分支=order本地库 + product扣库存）。
+     * 异常时 TC 驱动 product 分支按 undo_log 自动回补，替代 M2.1 的手写补偿循环。
+     */
+    @GlobalTransactional(name = "mall-order-create", rollbackFor = Exception.class, timeoutMills = 60000)
     public Order create(Long userId, Long addressId, List<OrderItemInput> items) {
         if (items == null || items.isEmpty()) {
             throw BizException.of("下单商品不能为空");
@@ -75,15 +82,12 @@ public class OrderService {
             return oi;
         }).toList();
 
-        // 3. 乐观锁扣库存（Feign → mall-product，任一失败整体回滚——注意跨服务补偿见 M2.2 Seata）
+        // 3. 乐观锁扣库存（Feign → mall-product，注册为 Seata AT 分支）
+        //    任一商品失败：全局事务回滚，TC 驱动 product 按 undo_log 反向补偿（替代手写回补循环）
+        log.info("global tx begin, xid={}", RootContext.getXID());
         for (OrderItem oi : orderItems) {
             Result<Boolean> dr = productInternalClient.deduct(oi.getProductId(), oi.getQuantity());
             if (dr.getCode() != 0 || !Boolean.TRUE.equals(dr.getData())) {
-                // 已扣的回补（朴素的跨服务补偿，M2.2 换 Seata AT）
-                for (OrderItem done : orderItems) {
-                    if (done == oi) break;
-                    productInternalClient.restore(done.getProductId(), done.getQuantity());
-                }
                 throw BizException.of(409, "库存不足");
             }
         }

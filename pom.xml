@@ -36,6 +36,7 @@
            关闭兼容校验以继续使用（官方矩阵见 spring.io/projects/spring-cloud#learn） -->
       <spring-cloud.version>2023.0.6</spring-cloud.version>
       <spring-cloud-alibaba.version>2023.0.3.3</spring-cloud-alibaba.version>
+      <seata.version>2.0.0</seata.version>
   </properties>
 
   <dependencyManagement>

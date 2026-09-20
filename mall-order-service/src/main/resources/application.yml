@@ -37,6 +37,17 @@ rocketmq:
     send-message-timeout: 3000
     retry-times-when-send-failed: 2
 
+seata:
+  enabled: true
+  application-id: mall-order
+  tx-service-group: mall_tx_group
+  service:
+    vgroup-mapping:
+      mall_tx_group: default
+    grouplist:
+      default: 127.0.0.1:8091
+  data-source-proxy-mode: AT
+
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true

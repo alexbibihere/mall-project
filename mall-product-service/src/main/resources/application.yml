@@ -39,3 +39,14 @@ mall:
   jwt:
     secret: mall-dev-secret-key-please-change-in-prod-0123456789abcdef
     expire-hours: 72
+
+seata:
+  enabled: true
+  application-id: mall-product
+  tx-service-group: mall_tx_group
+  service:
+    vgroup-mapping:
+      mall_tx_group: default
+    grouplist:
+      default: 127.0.0.1:8091
+  data-source-proxy-mode: AT

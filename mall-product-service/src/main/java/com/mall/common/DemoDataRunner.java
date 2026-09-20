@@ -25,6 +25,8 @@ public class DemoDataRunner implements CommandLineRunner {
         insert("经典马克杯", "家居", "MallSelf", "29.90", 100000);
         insert("纯棉T恤 基础款", "服饰", "MallSelf", "59.00", 200000);
         insert("无线蓝牙耳机", "数码", "MallSelf", "199.00", 50000);
+        // M2.2: 低库存 SKU，供 Seata AT 全局回滚冒烟（第 2 件扣减失败 -> 回滚回补第 1 件）
+        insert("Seata演示 低库存SKU", "演示", "MallSelf", "9.90", 1);
     }
 
     private void insert(String name, String category, String brand, String price, int stock) {
