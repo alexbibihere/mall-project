@@ -115,6 +115,8 @@ python scripts/mall_bench.py bench --bench-mode seckill --threads 30 --total 200
 
 | 文档 | 内容 |
 |---|---|
+| [README_TECH.md](README_TECH.md) | ⭐⭐ **技术详解总纲**：12 大技术=使用位置+真实代码+逻辑解析+面试话术 |
+| [docs/RESUME_TECH_DEEP_DIVE.md](docs/RESUME_TECH_DEEP_DIVE.md) | ⭐ 简历技术×项目对照（结合简历原文定制，四段式）|
 | [docs/亿级流量商城技术方案_v1.md](docs/亿级流量商城技术方案_v1.md) | 总体方案：选型/架构/八大技术专题/考点映射 |
 | [docs/功能板块与功能点清单_v1.md](docs/功能板块与功能点清单_v1.md) | 12 板块 60 功能点清单与里程碑映射 |
 | [docs/BENCH_M2_REPORT.md](docs/BENCH_M2_REPORT.md) | 压测对比报告（含 Seata -86.6% 归因） |
