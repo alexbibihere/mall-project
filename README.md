@@ -120,6 +120,7 @@ python scripts/mall_bench.py bench --bench-mode seckill --threads 30 --total 200
 | [docs/BENCH_M2_REPORT.md](docs/BENCH_M2_REPORT.md) | 压测对比报告（含 Seata -86.6% 归因） |
 | [docs/INTERVIEW_GUIDE.md](docs/INTERVIEW_GUIDE.md) | ⭐ 面试叙事手册：架构/理念/追问弹药库 |
 | [docs/TECH_INTERVIEW_QA.md](docs/TECH_INTERVIEW_QA.md) | ⭐ 技术点×面试题全景对照表（11 大类+三分钟自述模板） |
+| [docs/TECH_IMPLEMENTATION.md](docs/TECH_IMPLEMENTATION.md) | ⭐ 技术实现文档：12 大核心技术+核心代码展示 |
 | [docs/PENDING_TASKS.md](docs/PENDING_TASKS.md) | 未完成任务与基线数据速查 |
 | [docs/PROGRESS_M2.1.md](docs/PROGRESS_M2.1.md) | 环境坑/构建铁律/端口表 |
 
