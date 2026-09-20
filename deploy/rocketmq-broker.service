@@ -1,0 +1,14 @@
+[Unit]
+Description=RocketMQ Broker
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Environment=JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+ExecStart=/opt/rocketmq/bin/mqbroker -n localhost:9876 -c /opt/rocketmq/conf/broker.conf
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

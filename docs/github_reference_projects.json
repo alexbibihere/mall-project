@@ -1,0 +1,146 @@
+[
+ {
+  "repo": "macrozheng/mall",
+  "stars": 84797,
+  "lang": "Java",
+  "desc": "mall项目是一套电商系统，包括前台商城系统及后台管理系统，基于Spring Boot+MyBatis实现，采用Docker容器化部署。 前台商城系统包含首页门",
+  "updated": "2026-09-15",
+  "topics": "docker,elasticsearch,elk,java,mongodb,mybatis"
+ },
+ {
+  "repo": "YunaiV/yudao-cloud",
+  "stars": 19546,
+  "lang": "Java",
+  "desc": "ruoyi-vue-pro 全新 Cloud 版本，优化重构所有功能。基于 Spring Cloud Alibaba + MyBatis Plus + Vue ",
+  "updated": "2026-09-19",
+  "topics": "dubbo,elasticsearch,mall,mysql,nacos,redis"
+ },
+ {
+  "repo": "macrozheng/mall-learning",
+  "stars": 13415,
+  "lang": "Java",
+  "desc": "mall学习教程，架构、业务、技术要点全方位解析。mall项目（60k+star）是一套电商系统，使用现阶段主流技术实现。涵盖了SpringBoot、MyBat",
+  "updated": "2024-09-15",
+  "topics": "docker,elasticsearch,mongodb,mybatis,mysql,rabbitmq"
+ },
+ {
+  "repo": "macrozheng/mall-swarm",
+  "stars": 13146,
+  "lang": "Java",
+  "desc": "mall-swarm是一套微服务商城系统，采用了 Spring Cloud Alibaba、Spring Boot 3.5、Sa-Token、MyBatis、E",
+  "updated": "2026-07-31",
+  "topics": "docker,elasticsearch,java,k8s,kubernetes,mongodb"
+ },
+ {
+  "repo": "newbee-ltd/newbee-mall",
+  "stars": 11637,
+  "lang": "Java",
+  "desc": "🔥 🎉newbee-mall是一套电商系统，包括基础版本(Spring Boot+Thymeleaf)、前后端分离版本(Spring Boot+Vue 3+El",
+  "updated": "2025-10-27",
+  "topics": "adminlte,java,mall,microservice,mybatis,shop"
+ },
+ {
+  "repo": "gz-yami/mall4cloud",
+  "stars": 6151,
+  "lang": "JavaScript",
+  "desc": "⭐️⭐️⭐️微服务商城系统 springcloud微服务商城 小程序商城",
+  "updated": "2026-09-14",
+  "topics": "java,mall,springboot4,springcloud,vue3"
+ },
+ {
+  "repo": "lianghuan-xatu/Jd-Pruchase-Kill-dev",
+  "stars": 49,
+  "lang": "Java",
+  "desc": "This project focuses on optimizing the Java version of JD.com’s Moutai flash sal",
+  "updated": "2021-02-05",
+  "topics": ""
+ },
+ {
+  "repo": "codesssss/FlashSale",
+  "stars": 14,
+  "lang": "Java",
+  "desc": "Flash Sale System AKA. seckill system",
+  "updated": "2021-11-01",
+  "topics": ""
+ },
+ {
+  "repo": "fgu30/FlashSaleSystem",
+  "stars": 13,
+  "lang": "JavaScript",
+  "desc": "High concurrency and High Availabilitysystem for Flash Sale system with Springbo",
+  "updated": "2021-06-01",
+  "topics": "java,rabbitmq,redis,spring-boot"
+ },
+ {
+  "repo": "chao-dotcom/Ticket-Craze",
+  "stars": 9,
+  "lang": "JavaScript",
+  "desc": "I’ve never fought for concert tickets — but I built Ticket Craze so I could. It’",
+  "updated": "2026-02-03",
+  "topics": ""
+ },
+ {
+  "repo": "DateBro/FlashSale",
+  "stars": 7,
+  "lang": "JavaScript",
+  "desc": "E-commerce shopping system based on SpringBoot, Redis and RocketMQ",
+  "updated": "2022-09-01",
+  "topics": "java,redis,rocketmq,springboot"
+ },
+ {
+  "repo": "jay-zhao1/high-concurrency-flash-sale-system",
+  "stars": 7,
+  "lang": "Java",
+  "desc": "High-concurrency flash sale (seckill) system built with Java, Redis, and Kafka, ",
+  "updated": "2026-03-13",
+  "topics": ""
+ },
+ {
+  "repo": "zhaoyongze123/Nebula-Mall",
+  "stars": 2,
+  "lang": "Java",
+  "desc": "基于 Spring Cloud Alibaba 构建的微服务架构电商平台。深度集成 Nebula-Monitor 实现全链路可观测性，核心涵盖秒杀高并发限流、分",
+  "updated": "2026-03-10",
+  "topics": "distributed-transactions,high-concurrency,microservices,mysql,observability,rabbitmq"
+ },
+ {
+  "repo": "Leopord7/H-mall",
+  "stars": 1,
+  "lang": "Java",
+  "desc": "learn distributed system and high Concurrency",
+  "updated": "2020-12-02",
+  "topics": ""
+ },
+ {
+  "repo": "JiahaoHong1997/secKill-Mall",
+  "stars": 0,
+  "lang": "Go",
+  "desc": "Online shopping mall with high concurrency spike system",
+  "updated": "2022-02-26",
+  "topics": ""
+ },
+ {
+  "repo": "hongmeng3272-alt/flashsell",
+  "stars": 0,
+  "lang": "Java",
+  "desc": "High-Concurrency Online Mall Architecture (10,000+ QPS)",
+  "updated": "2026-07-09",
+  "topics": ""
+ },
+ {
+  "repo": "minrui922-sketch/HighConcurrency-Mall-with-AI-Agent-Customer-Service",
+  "stars": 0,
+  "lang": "Java",
+  "desc": "",
+  "updated": "2026-06-14",
+  "topics": ""
+ },
+ {
+  "repo": "HankMillersGitHub/high-concurrency-mall-project",
+  "stars": 0,
+  "lang": "Java",
+  "desc": "高并发商城项目",
+  "updated": "2025-12-10",
+  "topics": ""
+ }
+]

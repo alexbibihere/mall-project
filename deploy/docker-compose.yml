@@ -1,0 +1,51 @@
+services:
+
+  redis:
+    image: docker.m.daocloud.io/library/redis:7.2
+    container_name: mall-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: ["redis-server", "--appendonly", "yes"]
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  rocketmq-namesrv:
+    image: docker.m.daocloud.io/apache/rocketmq:5.5.0
+    container_name: mall-namesrv
+    ports:
+      - "9876:9876"
+    command: sh mqnamesrv
+    environment:
+      JAVA_OPT_EXT: "-Xms256m -Xmx256m"
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "netstat -tln | grep 9876 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  rocketmq-broker:
+    image: docker.m.daocloud.io/apache/rocketmq:5.5.0
+    container_name: mall-broker
+    depends_on:
+      rocketmq-namesrv:
+        condition: service_started
+    ports:
+      - "10909:10909"
+      - "10911:10911"
+      - "10912:10912"
+    volumes:
+      - ./rocketmq/broker.conf:/home/rocketmq/broker.conf:ro
+    command: sh mqbroker -n rocketmq-namesrv:9876 -c /home/rocketmq/broker.conf
+    environment:
+      JAVA_OPT_EXT: "-Xms512m -Xmx512m"
+    restart: always
+
+volumes:
+  redis-data:

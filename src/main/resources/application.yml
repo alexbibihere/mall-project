@@ -1,0 +1,65 @@
+server:
+  port: 8080
+  tomcat:
+    threads:
+      max: 400        # 工作线程池（压测基线配置）
+      min-spare: 50
+    accept-count: 1000
+    max-connections: 10000
+
+spring:
+  application:
+    name: mall-monolith
+  threads:
+    virtual:
+      enabled: true    # JDK21 虚拟线程：I/O 密集读链路吞吐质变（M1.5 实验）
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/mall?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    hikari:
+      minimum-idle: 10
+      maximum-pool-size: 50   # DB 连接是瓶颈资源，池子刻意小于 Tomcat 线程数
+      connection-timeout: 3000
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000
+      lettuce:
+        pool:
+          max-active: 64
+          max-idle: 32
+          min-idle: 8
+  jackson:
+    time-zone: Asia/Shanghai
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    # 压测时关闭 SQL 日志输出；调试时改回 org.apache.ibatis.logging.stdout.StdOutImpl
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+  global-config:
+    banner: false
+    db-config:
+      id-type: assign_id      # 雪花 ID（MyBatis-Plus 内置）
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# 注意：rocketmq-spring-boot-starter 的配置前缀是根级 rocketmq:（不在 spring: 下）
+rocketmq:
+  name-server: localhost:9876
+  producer:
+    group: mall-producer-group
+    send-message-timeout: 3000
+    retry-times-when-send-failed: 2
+
+mall:
+  jwt:
+    secret: mall-dev-secret-key-please-change-in-prod-0123456789abcdef
+    expire-hours: 72
+
+seckill:
+  bucket-count: 10          # 热点商品库存分桶数
