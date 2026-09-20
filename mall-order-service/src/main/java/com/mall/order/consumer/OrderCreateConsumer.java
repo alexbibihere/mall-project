@@ -102,6 +102,7 @@ public class OrderCreateConsumer implements RocketMQListener<SeckillMessage> {
 
             OrderItem item = new OrderItem();
             item.setOrderId(order.getId());
+            item.setUserId(msg.getUserId()); // M3.2 分片键冗余：缺失会导致分表路由丢失
             item.setProductId(msg.getProductId());
             item.setName(String.valueOf(p.get("name")));
             item.setPrice(price);

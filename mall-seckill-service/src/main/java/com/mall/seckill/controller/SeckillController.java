@@ -42,9 +42,12 @@ public class SeckillController {
     private final ProductClient productClient;
 
     /** 活动预热：按给定总库存建分桶。 */
+    private final com.mall.seckill.reconcile.StockReconcileTask reconcileTask;
+
     @PostMapping("/products/{productId}/warmup/{stock}")
     public Result<String> warmup(@PathVariable Long productId, @PathVariable int stock) {
         stockService.warmup(productId, stock);
+        reconcileTask.recordBaseline(productId, stock); // M3.3 对账基线登记
         return Result.ok("预热完成: " + stock);
     }
 
