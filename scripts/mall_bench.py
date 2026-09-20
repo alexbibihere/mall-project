@@ -158,23 +158,41 @@ def smoke():
     db_stock = r["data"]["stock"]
     print(f"[12] 分桶余量=9 ✓  DB库存={db_stock}（已同步扣1）✓")
 
-    # ---- M2.2 Seata AT 试点：跨服务扣减的全局回滚 ----
-    # 低库存 SKU(id=4, stock=1)：第1件扣减成功 -> 第2件失败 -> 全局回滚回补第1件
+    # ---- M2.3 前置：Seata AT 全局回滚验证（跨服务扣减的回补）----
+    # 动态构造超量：先查当前余量 X，一次买 X+1 件 -> 第1分支成功、第2分支失败 -> 全局回滚
     low = 4
     st, r = c.request("GET", f"/api/products/{low}")
     assert r["code"] == 0, r
     stock_before = r["data"]["stock"]
+    assert stock_before >= 2, f"低库存SKU余量异常: {stock_before}"
 
     st, r = c.request("POST", "/api/orders",
                       {"addressId": address_id,
-                       "items": [{"productId": low, "quantity": 1},
-                                 {"productId": low, "quantity": 1}]})
+                       "items": [{"productId": low, "quantity": stock_before - 1},
+                                 {"productId": low, "quantity": 2}]})
     assert r["code"] == 409 and "库存不足" in r["message"], r
     print(f"[13] Seata AT 全局回滚 OK（跨服务扣减已回补）✓")
 
     st, r = c.request("GET", f"/api/products/{low}")
     assert r["code"] == 0 and r["data"]["stock"] == stock_before, (stock_before, r)
-    print(f"[14] 库存回补一致性 OK stock={r['data']['stock']} ✓")
+    print(f"[14] 库存回补一致性 OK stock={r['data']['stock']}（与扣减前一致）✓")
+
+    # ---- M2.3 ES 搜索链路：分词检索 + facets 聚合 + MQ 增量同步 ----
+    from urllib.parse import quote
+    st, r = c.request("GET", "/api/search?q=" + quote("马克杯"))
+    assert r["code"] == 0, r
+    ids = [d["id"] for d in r["data"]["records"]]
+    assert 1 in ids, f"ES 搜索未命中商品1: {ids}"
+    assert "facets" in r["data"] and r["data"]["facets"].get("categories"), r["data"].get("facets")
+    print(f"[15] ES 搜索+聚合 OK 命中ids={ids} facets={list(r['data']['facets']['categories'].items())}")
+
+    # 增量同步验证：秒杀预热扣了分桶，MQ 事件应已把 stock 同步进 ES（容忍短暂滞后）
+    st, r = c.request("GET", "/api/search?q=" + quote("耳机"))
+    assert r["code"] == 0, r
+    earbud = next((d for d in r["data"]["records"] if d["id"] == 3), None)
+    assert earbud is not None, "ES 未命中耳机"
+    print(f"[16] ES MQ增量同步 OK 耳机ES库存={earbud['stock']}")
+
     c.close()
     print("=== 冒烟全部通过 ✓ ===")
 

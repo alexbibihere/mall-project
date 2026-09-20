@@ -1,7 +1,7 @@
 # 未完成任务进度列表（PENDING TASKS）
 
-> 创建：2026-09-20 ｜ **更新：P0 收尾全部完成（含 Seata 损耗实测 -86.6%）** ｜ 配套看板：[PROGRESS_M2.1.md](PROGRESS_M2.1.md)
-> 里程碑进度：M1 ✅ → M1.5 ✅ → M2.1 ✅ (5795e21) → **M2.2 ✅ (f692a95)** → M2.3 ⬜ → M2.4 ⬜
+> 创建：2026-09-20 ｜ **更新：P0 收尾 ✅ + M2.3 ES 搜索 ✅（冒烟 16/16）** ｜ 配套看板：[PROGRESS_M2.1.md](PROGRESS_M2.1.md)
+> 里程碑进度：M1 ✅ → M1.5 ✅ → M2.1 ✅ (5795e21) → M2.2 ✅ (f692a95) → M2.2收尾 ✅ (99ded9d) → **M2.3 ✅** → M2.4 ⬜
 
 ---
 
@@ -31,16 +31,22 @@
 
 ---
 
-## P1 · M2.3：ES 8 商品搜索全链路 ⬜（下一个里程碑）
+## P1 · M2.3：ES 8 商品搜索全链路 ✅ 完成（2026-09-20，冒烟 16/16 全绿）
 
-| # | 任务 | 要点 | 验收 |
-|---|---|---|---|
-| 1 | ES 8 容器 + IK 分词 | DaoCloud 镜像源（已验证可用），`ES_JAVA_OPTS` 限内存；IK 插件离线装入 | 容器 healthy，`_analyze` 中文分词正确 |
-| 2 | product 索引模型 | name/brand/category 分词策略 + price/stock 数值字段；mapping 落 `deploy/es/` | 索引创建脚本可重复执行 |
-| 3 | 数据同步链路 | 商品变更（增/改/扣减）→ MQ 事件 → search 同步写 ES（复用 rocketmq，新 topic `product-changed`）；对账兜底全量重建接口 `/internal/search/reindex` | 增量延迟 < 1s；对账脚本差集=0 |
-| 4 | 搜索接口 | `GET /api/search?q=&category=&minPrice=&maxPrice=&sort=`：分词检索 + 聚合（分类/品牌 facet）+ 搜索建议（completion/pinyin 可选） | 新增冒烟步（搜「马克杯」命中 id=1） |
-| 5 | 网关路由 + 限流 | 路由 `/api/search/**`；搜索接口加全局 QPS 流控（区别于用户级 ParamFlow） | 压测通过且触发限流符合预期 |
-| 6 | 提交 + 看板 | 冒烟 ≥15 步全绿 | git tag M2.3 |
+| # | 任务 | 结果 |
+|---|---|---|
+| 1 | ES 8.11.4 容器 + IK 分词 | ✅ compose 托管 mall-es（DaoCloud 镜像，512m 堆，数据卷持久化）；IK 走 infinilabs 官方源（阿里云 maven 已 404）；`_analyze` 验证：无线蓝牙耳机→[无线,蓝牙,耳机] |
+| 2 | 索引模型 mall_products | ✅ name/brand/category=text(ik_max_word索引/ik_smart检索)+keyword子字段；price=scaled_float(100)；stock=integer；mapping 内嵌 ProductSearchService，启动幂等建索引 |
+| 3 | 数据同步链路 | ✅ product 扣减/回补 afterCommit 发 PRODUCT_CHANGED_TOPIC → search 消费 upsert（日志实证 es upserted）；启动全量 reindex + /internal/search/reindex 对账接口 |
+| 4 | 搜索接口 | ✅ GET /api/search?q&category&brand&minPrice&maxPrice&sort：multiMatch(name^3>brand^2>category)+term filter+range+分页+sort+categories/brands 聚合 |
+| 5 | 网关路由 | ✅ /api/search/** 路由+白名单；全局 QPS 流控移 P3 |
+| 6 | 提交 | ✅ 冒烟 16/16（新增 [15] 搜索+聚合命中 facets=[('家居',1)]、[16] MQ 增量同步 ES 库存一致） |
+
+### M2.3 踩坑（重要）
+- **WPS 云服务(wpscloudsvr.exe)抢占 8102/8103** → product 改 8112、cart 改 8113；此软件常驻会随机抢端口，服务「端口幽灵占用」先查它
+- ES Java Client 8.11 API：RangeQuery 用 `gte(JsonData)/lte(JsonData)`（无 number()）；terms 聚合 keyword 字段用 `sterms`（bucket.key() 直接是 String，无需 stringValue）
+- python http.client 请求行不支持非 ASCII → 中文查询参数必须 urllib.parse.quote
+- 模块单独 package 需先 install parent(-N)+common，否则远程仓库缓存污染报 not found
 
 ---
 

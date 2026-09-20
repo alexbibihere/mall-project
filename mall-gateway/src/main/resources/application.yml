@@ -27,6 +27,9 @@ spring:
         - id: seckill
           uri: lb://mall-seckill
           predicates: [ "Path=/api/seckill/**" ]
+        - id: search
+          uri: lb://mall-search
+          predicates: [ "Path=/api/search/**" ]
       discovery:
         locator:
           enabled: false
@@ -39,4 +42,5 @@ auth:
   whitelist:
     - /api/auth
     - /api/products
+    - /api/search
     - /api/payments/mock

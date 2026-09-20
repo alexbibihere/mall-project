@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.mall.common.BizException;
 import com.mall.product.entity.Product;
 import com.mall.product.mapper.ProductMapper;
+import com.mall.product.mq.ProductEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,7 +16,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import java.time.Duration;
 
 /**
- * 商品服务：M1.5 多级缓存版。
+ * 商品服务：M1.5 多级缓存版 + M2.3 变更事件（MQ -> search 同步 ES）。
  * L1 Caffeine(进程内, 5s 短窗抗热点) -> L2 Redis(30min, 旁路缓存+空值防穿透) -> DB
  */
 @Slf4j
@@ -29,13 +30,16 @@ public class ProductService {
     private final ProductMapper productMapper;
     private final StringRedisTemplate redis;
     private final Cache<Long, Object> localCache;
+    private final ProductEventPublisher eventPublisher;
 
     public ProductService(ProductMapper productMapper,
                           StringRedisTemplate redis,
-                          @Qualifier("localCache") Cache<Long, Object> localCache) {
+                          @Qualifier("localCache") Cache<Long, Object> localCache,
+                          ProductEventPublisher eventPublisher) {
         this.productMapper = productMapper;
         this.redis = redis;
         this.localCache = localCache;
+        this.eventPublisher = eventPublisher;
     }
 
     public Page<Product> page(long pageNum, long pageSize, String keyword) {
@@ -82,6 +86,12 @@ public class ProductService {
     public void evict(Long id) {
         localCache.invalidate(id);
         redis.delete(KEY_PREFIX + id);
+    }
+
+    /** M2.3: 库存/信息变更后的完整失效链：本地缓存 + Redis + 变更事件（ES 同步）。 */
+    public void evictAndPublish(Product p) {
+        evict(p.getId());
+        eventPublisher.publishChanged(p);
     }
 
     // 简化序列化：M1 用「id|name|category|brand|price|stock」文本行编码，

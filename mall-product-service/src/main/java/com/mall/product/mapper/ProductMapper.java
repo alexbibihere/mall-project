@@ -1,10 +1,14 @@
 package com.mall.product.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.mall.common.mq.ProductChangedMessage;
 import com.mall.product.entity.Product;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+
+import java.util.List;
 
 @Mapper
 public interface ProductMapper extends BaseMapper<Product> {
@@ -19,4 +23,11 @@ public interface ProductMapper extends BaseMapper<Product> {
     /** 回补库存（取消/关单）。 */
     @Update("UPDATE product SET stock = stock + #{num} WHERE id = #{id}")
     int restoreStock(@Param("id") Long id, @Param("num") int num);
+
+    /** M2.3: 全量快照（reindex 对账用）。 */
+    @Select("""
+            SELECT id, name, category, brand, price, stock
+            FROM product
+            """)
+    List<ProductChangedMessage> selectAllAsMessage();
 }

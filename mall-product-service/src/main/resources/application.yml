@@ -1,5 +1,5 @@
 server:
-  port: 8102
+  port: 8112
 
 spring:
   application:
@@ -25,6 +25,12 @@ spring:
       host: localhost
       port: 6379
       timeout: 2000
+
+rocketmq:
+  name-server: localhost:9876
+  producer:
+    group: mall-product-producer-group
+    send-message-timeout: 3000
 
 mybatis-plus:
   configuration:

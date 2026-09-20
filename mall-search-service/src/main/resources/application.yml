@@ -1,24 +1,30 @@
 server:
-  port: 8113
+  port: 8106
 
 spring:
   application:
-    name: mall-cart
+    name: mall-search
   cloud:
     compatibility-verifier:
       enabled: false
     nacos:
       discovery:
         server-addr: localhost:8848
-  data:
-    redis:
-      host: localhost
-      port: 6379
-      timeout: 2000
+
+elasticsearch:
+  host: localhost
+  port: 9200
+
+rocketmq:
+  name-server: localhost:9876
+  producer:
+    group: mall-product-producer-group
+    send-message-timeout: 3000
+
+search:
+  fulltext-fields: name,category,brand
 
 mall:
   jwt:
     secret: mall-dev-secret-key-please-change-in-prod-0123456789abcdef
     expire-hours: 72
-  feign:
-    product: mall-product

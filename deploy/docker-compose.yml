@@ -70,5 +70,26 @@ services:
       SEATA_PORT: "8091"
     restart: always
 
+  # M2.3: Elasticsearch 8 商品搜索（单节点 + IK 分词，挂载 install-ik.sh 供首次安装）
+  elasticsearch:
+    image: docker.m.daocloud.io/library/elasticsearch:8.11.4
+    container_name: mall-es
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+      - ./es/install-ik.sh:/install-ik.sh:ro
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+
 volumes:
   redis-data:
+  es-data:
