@@ -1,0 +1,183 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="890" viewBox="0 0 1280 890" font-family="'Microsoft YaHei','PingFang SC','Noto Sans SC',sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b1020"/>
+      <stop offset="1" stop-color="#0e1526"/>
+    </linearGradient>
+    <linearGradient id="gw" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b45309"/>
+      <stop offset="1" stop-color="#d97706"/>
+    </linearGradient>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrO" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#f59e0b"/>
+    </marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/>
+    </marker>
+    <marker id="arrP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#a78bfa"/>
+    </marker>
+  </defs>
+
+  <rect width="1280" height="890" fill="url(#bg)"/>
+
+  <!-- 标题 -->
+  <text x="640" y="46" text-anchor="middle" font-size="27" font-weight="bold" fill="#f8fafc">亿级流量商城 · 微服务架构总览</text>
+  <text x="640" y="74" text-anchor="middle" font-size="13.5" fill="#94a3b8">单体 → 微服务 → 分布式 完整演进 · 冒烟 16/16 全绿 · 关键指标实测背书</text>
+
+  <!-- 客户端 -->
+  <rect x="460" y="98" width="360" height="44" rx="10" fill="#1e293b" stroke="#334155"/>
+  <text x="640" y="125" text-anchor="middle" font-size="14.5" fill="#e2e8f0">客户端 · 浏览器 / mall_bench 冒烟与压测</text>
+
+  <line x1="640" y1="142" x2="640" y2="172" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- 网关 -->
+  <rect x="400" y="176" width="480" height="64" rx="12" fill="url(#gw)" stroke="#fbbf24"/>
+  <text x="640" y="203" text-anchor="middle" font-size="17" font-weight="bold" fill="#fff7ed">Spring Cloud Gateway : 9000</text>
+  <text x="640" y="226" text-anchor="middle" font-size="12.5" fill="#ffedd5">JWT 鉴权 · 白名单 · Redis+Lua 限流 · 路由转发</text>
+
+  <!-- 网关总线 -->
+  <line x1="640" y1="240" x2="640" y2="266" stroke="#64748b" stroke-width="1.5"/>
+  <line x1="130" y1="266" x2="1150" y2="266" stroke="#475569" stroke-width="1.5"/>
+  <line x1="130" y1="266" x2="130" y2="296" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="334" y1="266" x2="334" y2="296" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="538" y1="266" x2="538" y2="296" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="742" y1="266" x2="742" y2="296" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="946" y1="266" x2="946" y2="296" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="1150" y1="266" x2="1150" y2="296" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- 六个业务服务 -->
+  <g>
+    <rect x="40" y="300" width="180" height="120" rx="12" fill="#818cf8" fill-opacity="0.10" stroke="#818cf8" stroke-opacity="0.85" stroke-width="1.5"/>
+    <text x="130" y="326" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#a5b4fc">mall-user : 8101</text>
+    <text x="130" y="354" text-anchor="middle" font-size="11" fill="#cbd5e1">注册登录 · JWT 签发</text>
+    <text x="130" y="374" text-anchor="middle" font-size="11" fill="#cbd5e1">地址管理 · 下单快照</text>
+  </g>
+  <g>
+    <rect x="244" y="300" width="180" height="120" rx="12" fill="#60a5fa" fill-opacity="0.10" stroke="#60a5fa" stroke-opacity="0.85" stroke-width="1.5"/>
+    <text x="334" y="326" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#93c5fd">mall-product : 8112</text>
+    <text x="334" y="352" text-anchor="middle" font-size="11" fill="#cbd5e1">商品详情 · 多级缓存</text>
+    <text x="334" y="370" text-anchor="middle" font-size="11" fill="#cbd5e1">库存扣减 · 乐观锁</text>
+    <text x="334" y="388" text-anchor="middle" font-size="11" fill="#cbd5e1">变更事件 → MQ</text>
+  </g>
+  <g>
+    <rect x="448" y="300" width="180" height="120" rx="12" fill="#22d3ee" fill-opacity="0.10" stroke="#22d3ee" stroke-opacity="0.85" stroke-width="1.5"/>
+    <text x="538" y="326" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#67e8f9">mall-cart : 8113</text>
+    <text x="538" y="354" text-anchor="middle" font-size="11" fill="#cbd5e1">购物车 Redis Hash</text>
+    <text x="538" y="374" text-anchor="middle" font-size="11" fill="#cbd5e1">结算预览</text>
+  </g>
+  <g>
+    <rect x="652" y="300" width="180" height="120" rx="12" fill="#a78bfa" fill-opacity="0.10" stroke="#a78bfa" stroke-opacity="0.85" stroke-width="1.5"/>
+    <text x="742" y="326" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#c4b5fd">mall-order : 8104</text>
+    <text x="742" y="352" text-anchor="middle" font-size="11" fill="#cbd5e1">订单状态机 · CAS</text>
+    <text x="742" y="370" text-anchor="middle" font-size="11" fill="#cbd5e1">本地消息表 · 对账</text>
+    <text x="742" y="388" text-anchor="middle" font-size="11" fill="#cbd5e1">支付 mock · 回调幂等</text>
+  </g>
+  <g>
+    <rect x="856" y="300" width="180" height="120" rx="12" fill="#fb7185" fill-opacity="0.10" stroke="#fb7185" stroke-opacity="0.85" stroke-width="1.5"/>
+    <text x="946" y="326" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#fda4af">mall-seckill : 8105</text>
+    <text x="946" y="352" text-anchor="middle" font-size="11" fill="#cbd5e1">Lua 分桶预扣</text>
+    <text x="946" y="370" text-anchor="middle" font-size="11" fill="#cbd5e1">限流 · 幂等令牌</text>
+    <text x="946" y="388" text-anchor="middle" font-size="11" fill="#cbd5e1">MQ 异步落库</text>
+  </g>
+  <g>
+    <rect x="1060" y="300" width="180" height="120" rx="12" fill="#34d399" fill-opacity="0.10" stroke="#34d399" stroke-opacity="0.85" stroke-width="1.5"/>
+    <text x="1150" y="326" text-anchor="middle" font-size="14.5" font-weight="bold" fill="#6ee7b7">mall-search : 8106</text>
+    <text x="1150" y="352" text-anchor="middle" font-size="11" fill="#cbd5e1">ES 检索 · IK 分词</text>
+    <text x="1150" y="370" text-anchor="middle" font-size="11" fill="#cbd5e1">facets 聚合</text>
+    <text x="1150" y="388" text-anchor="middle" font-size="11" fill="#cbd5e1">增量同步 · reindex</text>
+  </g>
+
+  <!-- 公共依赖 -->
+  <rect x="40" y="436" width="1200" height="40" rx="10" fill="#1e293b" fill-opacity="0.55" stroke="#334155" stroke-dasharray="4 3"/>
+  <text x="640" y="461" text-anchor="middle" font-size="12.5" fill="#94a3b8">mall-common —— JWT 校验 · 雪花 ID（基因法） · Redis+Lua 限流切面 · MQ 常量 · 统一异常 / Result 规范（被 6 服务依赖）</text>
+
+  <!-- 服务 → 中间件 -->
+  <line x1="148" y1="476" x2="148" y2="512" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="156" y="498" font-size="10" fill="#64748b">注册/发现</text>
+  <line x1="394" y1="476" x2="394" y2="512" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="402" y="498" font-size="10" fill="#64748b">缓存·Lua·幂等</text>
+  <line x1="640" y1="476" x2="640" y2="512" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#arrO)"/>
+  <text x="648" y="498" font-size="10" fill="#b45309">事件驱动</text>
+  <line x1="886" y1="476" x2="886" y2="512" stroke="#64748b" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="894" y="498" font-size="10" fill="#64748b">索引读写</text>
+
+  <!-- 中间件 -->
+  <g>
+    <rect x="40" y="516" width="216" height="96" rx="12" fill="#141d33" stroke="#2c3a5c"/>
+    <text x="148" y="542" text-anchor="middle" font-size="14" font-weight="bold" fill="#7dd3fc">Nacos : 8848</text>
+    <text x="148" y="566" text-anchor="middle" font-size="11" fill="#94a3b8">服务注册 · 发现</text>
+    <text x="148" y="584" text-anchor="middle" font-size="11" fill="#94a3b8">健康检查</text>
+  </g>
+  <g>
+    <rect x="286" y="516" width="216" height="96" rx="12" fill="#141d33" stroke="#2c3a5c"/>
+    <text x="394" y="542" text-anchor="middle" font-size="14" font-weight="bold" fill="#f87171">Redis : 6379</text>
+    <text x="394" y="566" text-anchor="middle" font-size="11" fill="#94a3b8">缓存 · Lua 分桶预扣</text>
+    <text x="394" y="584" text-anchor="middle" font-size="11" fill="#94a3b8">幂等令牌 · 购物车</text>
+  </g>
+  <g>
+    <rect x="532" y="516" width="216" height="96" rx="12" fill="#141d33" stroke="#2c3a5c"/>
+    <text x="640" y="542" text-anchor="middle" font-size="14" font-weight="bold" fill="#fbbf24">RocketMQ : 9876</text>
+    <text x="640" y="566" text-anchor="middle" font-size="11" fill="#94a3b8">下单扣减任务 · 秒杀落库</text>
+    <text x="640" y="584" text-anchor="middle" font-size="11" fill="#94a3b8">商品变更→ES · 滞留重发</text>
+  </g>
+  <g>
+    <rect x="778" y="516" width="216" height="96" rx="12" fill="#141d33" stroke="#2c3a5c"/>
+    <text x="886" y="542" text-anchor="middle" font-size="14" font-weight="bold" fill="#34d399">Elasticsearch : 9200</text>
+    <text x="886" y="566" text-anchor="middle" font-size="11" fill="#94a3b8">mall_products 索引</text>
+    <text x="886" y="584" text-anchor="middle" font-size="11" fill="#94a3b8">ik_max_word / ik_smart</text>
+  </g>
+  <g>
+    <rect x="1024" y="516" width="216" height="96" rx="12" fill="#141d33" fill-opacity="0.6" stroke="#2c3a5c" stroke-dasharray="5 3"/>
+    <text x="1132" y="542" text-anchor="middle" font-size="14" font-weight="bold" fill="#94a3b8">Seata : 8091</text>
+    <text x="1132" y="566" text-anchor="middle" font-size="11" fill="#64748b">AT 试点完成 → 已退场</text>
+    <text x="1132" y="584" text-anchor="middle" font-size="11" fill="#64748b">由本地消息表替代</text>
+  </g>
+
+  <!-- 关键链路说明 -->
+  <text x="48" y="638" font-size="11"><tspan fill="#60a5fa" font-weight="bold">同步链路</tspan><tspan fill="#94a3b8">  Gateway → 业务服务 → OpenFeign（order→product/user · seckill→product · search→product 对账）· X-User-Id 透传</tspan></text>
+  <text x="48" y="656" font-size="11"><tspan fill="#f59e0b" font-weight="bold">异步事件</tspan><tspan fill="#94a3b8">  order → 扣减任务(本地消息表 afterCommit) → MQ → 消费端 CAS 抢任务幂等扣减 · seckill 受理 → MQ → 异步落库 · 补偿任务 10s 重扫</tspan></text>
+
+  <!-- 数据层 -->
+  <g>
+    <rect x="120" y="672" width="340" height="88" rx="12" fill="#1a1233" stroke="#7c3aed" stroke-opacity="0.7" stroke-width="1.5"/>
+    <text x="290" y="696" text-anchor="middle" font-size="14" font-weight="bold" fill="#c4b5fd">MySQL · ds0（mall 主库）</text>
+    <text x="290" y="716" text-anchor="middle" font-size="10.5" fill="#94a3b8">orders_0/1 · order_item_0/1 · order_status_log_0/1</text>
+    <text x="290" y="732" text-anchor="middle" font-size="10.5" fill="#94a3b8">payment · order_stock_task · users · address</text>
+    <text x="290" y="748" text-anchor="middle" font-size="10.5" fill="#94a3b8">product · cart_item · undo_log</text>
+  </g>
+  <g>
+    <rect x="520" y="672" width="240" height="88" rx="12" fill="#22103a" stroke="#a78bfa" stroke-opacity="0.85" stroke-width="1.5"/>
+    <text x="640" y="700" text-anchor="middle" font-size="14" font-weight="bold" fill="#c4b5fd">ShardingSphere 5.5.2</text>
+    <text x="640" y="722" text-anchor="middle" font-size="11" fill="#cbd5e1">基因法路由</text>
+    <text x="640" y="740" text-anchor="middle" font-size="11" fill="#94a3b8">订单号末位 = user_id % 10</text>
+  </g>
+  <g>
+    <rect x="820" y="672" width="340" height="88" rx="12" fill="#1a1233" stroke="#7c3aed" stroke-opacity="0.7" stroke-width="1.5"/>
+    <text x="990" y="696" text-anchor="middle" font-size="14" font-weight="bold" fill="#c4b5fd">MySQL · ds1（mall_shard1）</text>
+    <text x="990" y="716" text-anchor="middle" font-size="10.5" fill="#94a3b8">orders_1 · order_item_1 · order_status_log_1</text>
+    <text x="990" y="732" text-anchor="middle" font-size="10.5" fill="#94a3b8">（user_id 奇数分片）</text>
+    <text x="990" y="748" text-anchor="middle" font-size="10.5" fill="#94a3b8">与 ds0 结构对称 · 同片闭环查询</text>
+  </g>
+
+  <line x1="516" y1="716" x2="464" y2="716" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrP)"/>
+  <line x1="764" y1="716" x2="816" y2="716" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#arrP)"/>
+
+  <!-- 对账中心 -->
+  <line x1="640" y1="760" x2="640" y2="792" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="2 3" marker-end="url(#arrG)"/>
+  <rect x="120" y="796" width="1040" height="54" rx="12" fill="#fbbf24" fill-opacity="0.05" stroke="#fbbf24" stroke-dasharray="6 4"/>
+  <text x="640" y="819" text-anchor="middle" font-size="14" font-weight="bold" fill="#fbbf24">对账中心 · 每 5 分钟闭环</text>
+  <text x="640" y="840" text-anchor="middle" font-size="11.5" fill="#fde68a">订单三态闭环校验（CANCELLED / UNPAID / PAID） · 滞留任务重发 · 秒杀库存 Redis↔DB 活动口径核对（实测 drift=0）</text>
+
+  <!-- 图例 -->
+  <line x1="120" y1="872" x2="158" y2="872" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="164" y="876" font-size="11" fill="#64748b">同步调用 Feign/HTTP</text>
+  <line x1="330" y1="872" x2="368" y2="872" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <text x="374" y="876" font-size="11" fill="#64748b">异步事件 RocketMQ</text>
+  <line x1="540" y1="872" x2="578" y2="872" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="2 3"/>
+  <text x="584" y="876" font-size="11" fill="#64748b">对账链路</text>
+  <text x="1160" y="876" text-anchor="end" font-size="11" fill="#475569">mall-project · 7 services · smoke 16/16 · github.com/alexbibihere/mall-project</text>
+</svg>
