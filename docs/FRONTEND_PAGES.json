@@ -1,0 +1,80 @@
+{
+  "title": "前端页面清单与接口映射",
+  "gateway": "http://localhost:9000，所有 /api/** 经网关；JWT 放 Header: Authorization: Bearer <token>",
+  "pages": [
+    {
+      "page": "登录/注册",
+      "routes": [
+        "POST /api/auth/register",
+        "POST /api/auth/login"
+      ],
+      "fields": "register: phone/password/nickname; login: phone/password → {token, userId}"
+    },
+    {
+      "page": "商城首页=商品列表",
+      "api": "GET /api/products?pageNum&pageSize",
+      "note": "分页 records/total"
+    },
+    {
+      "page": "商品详情",
+      "api": "GET /api/products/{id}",
+      "note": "多级缓存读"
+    },
+    {
+      "page": "搜索结果",
+      "api": "GET /api/search?q&category&brand&minPrice&maxPrice&sort&pageNum&pageSize",
+      "note": "返回 total/records/facets(categories,brands)"
+    },
+    {
+      "page": "购物车",
+      "apis": [
+        "GET /api/cart",
+        "POST /api/cart {productId,quantity}",
+        "PUT /api/cart/{productId}/qty/{qty}",
+        "PUT /api/cart/{productId}/check/{checked}",
+        "DELETE /api/cart/{productId}"
+      ]
+    },
+    {
+      "page": "地址管理",
+      "apis": [
+        "GET/POST /api/addresses",
+        "PUT/DELETE /api/addresses/{id}"
+      ]
+    },
+    {
+      "page": "下单确认",
+      "apis": [
+        "POST /api/orders {addressId, fromCart, items[]}"
+      ],
+      "resp": "{orderNo, status, payAmount}"
+    },
+    {
+      "page": "订单列表/详情",
+      "apis": [
+        "GET /api/orders (pageMine)",
+        "GET /api/orders/{orderNo}"
+      ]
+    },
+    {
+      "page": "支付",
+      "apis": [
+        "POST /api/payments/orders/{orderNo} (创建支付单)",
+        "POST /api/payments/mock/notify/{paymentId} (模拟回调)"
+      ]
+    },
+    {
+      "page": "秒杀",
+      "apis": [
+        "POST /api/seckill/products/{pid}/warmup/{stock} (管理)",
+        "GET /api/seckill/token (需登录)",
+        "POST /api/seckill/orders {productId,addressId,quantity≤5} @RateLimit+@Idempotent",
+        "GET /api/seckill/stock/{pid}"
+      ]
+    },
+    {
+      "page": "订单取消",
+      "api": "POST /api/orders/{orderNo}/cancel"
+    }
+  ]
+}

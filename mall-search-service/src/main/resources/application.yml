@@ -28,3 +28,6 @@ mall:
   jwt:
     secret: mall-dev-secret-key-please-change-in-prod-0123456789abcdef
     expire-hours: 72
+  auth:
+    # 搜索免登录（未登录可逛：网关白名单 + 服务层豁免双层对齐）
+    exclude-patterns: /api/search

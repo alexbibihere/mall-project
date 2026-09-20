@@ -34,6 +34,7 @@ public class AuthGlobalFilter implements GlobalFilter, Ordered {
     private static final List<String> OPEN_PREFIXES = List.of(
             "/api/auth",
             "/api/products",
+            "/api/search",
             "/api/payments/mock/notify/"
     );
 

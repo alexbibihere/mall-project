@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>login probe</title></head>
+<body>
+<pre id="out">starting...</pre>
+<script>
+(async () => {
+  const out = document.getElementById('out');
+  const log = s => out.textContent += "\n" + s;
+  try {
+    log("1. fetch login from origin " + location.origin);
+    const res = await fetch("http://localhost:9000/api/auth/login", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({phone: "13900001111", password: "Passw0rd!123"})
+    });
+    log("2. HTTP " + res.status);
+    const data = await res.json();
+    log("3. code=" + data.code + " token=" + (data.data && data.data.token ? data.data.token.slice(0,20)+"..." : "NONE"));
+    log("DONE-OK");
+  } catch (e) {
+    log("FETCH-ERROR: " + e.message);
+  }
+})();
+</script></body></html>

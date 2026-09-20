@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>亿级流量商城</title>
+<style>
+  :root {
+    --bg: #f5f6fa; --card: #fff; --line: #e8eaf0;
+    --main: #e4393c; --main-d: #c1272d;
+    --txt: #23262b; --sub: #7a8087;
+    --ok: #0ca678; --warn: #e8590c;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--txt); font: 14px/1.6 "PingFang SC","Microsoft YaHei",sans-serif; }
+  a { color: inherit; text-decoration: none; }
+  button { cursor: pointer; border: none; font-family: inherit; }
+
+  /* 顶栏 */
+  .topbar { background: var(--card); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 50; }
+  .topbar .inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; gap: 18px; padding: 0 16px; height: 56px; }
+  .logo { font-size: 20px; font-weight: 800; color: var(--main); letter-spacing: 1px; }
+  .logo small { font-size: 10px; color: var(--sub); font-weight: normal; margin-left: 6px; }
+  .nav { display: flex; gap: 4px; flex: 1; }
+  .nav a { padding: 6px 14px; border-radius: 6px; color: var(--txt); font-weight: 500; }
+  .nav a.active, .nav a:hover { background: #fdeeee; color: var(--main); }
+  .userbox { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--sub); }
+  .userbox b { color: var(--txt); }
+
+  .wrap { max-width: 1100px; margin: 18px auto; padding: 0 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px; margin-bottom: 16px; }
+  .card h3 { font-size: 16px; margin-bottom: 12px; }
+
+  /* 按钮 */
+  .btn { padding: 8px 18px; border-radius: 7px; font-size: 13.5px; font-weight: 600; background: var(--main); color: #fff; transition: .15s; }
+  .btn:hover { background: var(--main-d); }
+  .btn.ghost { background: #fff; color: var(--main); border: 1px solid var(--main); }
+  .btn.gray { background: #eef0f4; color: var(--txt); }
+  .btn.sm { padding: 4px 12px; font-size: 12.5px; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+
+  input, select { padding: 9px 12px; border: 1px solid #d6dae2; border-radius: 7px; font-size: 14px; outline: none; width: 100%; }
+  input:focus, select:focus { border-color: var(--main); }
+  label { font-size: 13px; color: var(--sub); display: block; margin: 10px 0 4px; }
+
+  /* 商品网格 */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 14px; }
+  .p-card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; cursor: pointer; transition: .15s; }
+  .p-card:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(0,0,0,.08); }
+  .p-thumb { height: 130px; display: flex; align-items: center; justify-content: center; font-size: 44px; color: #fff; }
+  .p-info { padding: 12px 14px; }
+  .p-name { font-weight: 600; font-size: 14.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .p-meta { font-size: 12px; color: var(--sub); margin-top: 2px; }
+  .p-price { color: var(--main); font-size: 18px; font-weight: 800; margin-top: 6px; }
+  .p-price small { font-size: 12px; font-weight: normal; }
+
+  /* 表单 */
+  .form { max-width: 380px; margin: 40px auto; }
+  .form .btn { width: 100%; margin-top: 16px; padding: 11px; }
+  .switch { text-align: center; margin-top: 12px; font-size: 13px; color: var(--sub); }
+  .switch a { color: var(--main); cursor: pointer; font-weight: 600; }
+
+  /* 提示条 */
+  #toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); z-index: 999;
+    background: rgba(20,22,28,.92); color: #fff; padding: 10px 22px; border-radius: 8px; font-size: 13.5px;
+    display: none; max-width: 80vw; }
+  #toast.err { background: rgba(196,39,45,.95); }
+  #toast.ok { background: rgba(12,166,120,.95); }
+
+  /* 表格 */
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+  th { color: var(--sub); font-weight: 500; font-size: 12.5px; }
+  .tag { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; }
+  .tag.gray { background: #eef0f4; color: var(--sub); }
+  .tag.orange { background: #fff0e6; color: var(--warn); }
+  .tag.green { background: #e6f7f1; color: var(--ok); }
+  .tag.red { background: #fdeeee; color: var(--main); }
+
+  /* 详情页 */
+  .detail { display: flex; gap: 28px; }
+  .detail-thumb { width: 320px; height: 320px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 110px; color: #fff; flex-shrink: 0; }
+  .detail-info h2 { font-size: 22px; margin: 6px 0 10px; }
+  .detail-price { font-size: 30px; color: var(--main); font-weight: 800; }
+  .detail-price small { font-size: 14px; font-weight: normal; color: var(--sub); }
+  .stock-line { margin: 12px 0; font-size: 13px; color: var(--sub); }
+  .stock-line b { color: var(--ok); }
+  .qty-box { display: flex; align-items: center; gap: 8px; margin: 14px 0; }
+  .qty-box input { width: 70px; text-align: center; }
+  .facets { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+  .chip { padding: 4px 14px; background: #fff; border: 1px solid var(--line); border-radius: 20px; font-size: 12.5px; cursor: pointer; color: var(--sub); }
+  .chip.on { border-color: var(--main); color: var(--main); background: #fdeeee; }
+  .searchbar { display: flex; gap: 10px; margin-bottom: 14px; }
+  .searchbar input { flex: 1; }
+  .muted { color: var(--sub); font-size: 12.5px; }
+  .row { display: flex; align-items: center; gap: 10px; }
+  .sp { flex: 1; }
+  h2.page-title { font-size: 20px; margin-bottom: 14px; }
+  .empty { text-align: center; padding: 50px 0; color: var(--sub); }
+</style>
+</head>
+<body>
+<div id="toast"></div>
+<div class="topbar"><div class="inner">
+  <a class="logo" href="#/">MALL<small>亿级流量商城</small></a>
+  <nav class="nav" id="nav"></nav>
+  <div class="userbox" id="userbox"></div>
+</div></div>
+<div class="wrap" id="app"></div>
+
+<script>
+/* ============ 基础设施 ============ */
+window.onerror = function(msg, src, line) {
+  var el = document.getElementById('toast');
+  el.textContent = 'JS错误: ' + msg + ' @' + line;
+  el.className = 'err'; el.style.display = 'block';
+};
+const API = location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+  ? 'http://localhost:9000' : '';   // 同域部署时留空走相对路径
+const store = {
+  get token() { return localStorage.getItem('token') || ''; },
+  get userId() { return localStorage.getItem('userId') || ''; },
+  get phone() { return localStorage.getItem('phone') || ''; },
+  login(token, userId, phone) { localStorage.setItem('token', token); localStorage.setItem('userId', userId); localStorage.setItem('phone', phone || ''); },
+  logout() { localStorage.clear(); location.hash = '#/login'; }
+};
+
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = type; el.style.display = 'block';
+  clearTimeout(el._t); el._t = setTimeout(() => el.style.display = 'none', 2600);
+}
+
+async function api(method, path, body, extra = {}) {
+  const headers = { 'Content-Type': 'application/json', ...extra };
+  if (store.token) headers['Authorization'] = 'Bearer ' + store.token;
+  const res = await fetch(API + path, {
+    method, headers,
+    body: body === undefined ? undefined : JSON.stringify(body)
+  });
+  let data = {};
+  try { data = await res.json(); } catch (e) { data = { code: res.status, message: 'HTTP ' + res.status }; }
+  if (data.code !== 0) throw Object.assign(new Error(data.message || '请求失败'), { code: data.code, body: data });
+  return data.data;
+}
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = n => '¥' + Number(n).toFixed(2);
+const COLORS = ['#e4393c','#4098fc','#22c1dc','#f59e0b','#8b5cf6','#10b981','#ec4899','#6366f1'];
+const colorOf = id => COLORS[(id ?? 0) % COLORS.length];
+
+/* ============ 路由 ============ */
+const routes = {
+  '/':            Home,  '/login': Login, '/register': Register,
+  '/product/:id': ProductDetail, '/search': Search,
+  '/cart': Cart, '/address': Address,
+  '/checkout': Checkout, '/orders': Orders, '/order/:no': OrderDetail,
+  '/seckill': Seckill,
+};
+window.addEventListener('hashchange', render);
+
+/* 事件委托：所有 data-action 元素统一分发（不依赖内联 onclick / 绑定时机） */
+document.addEventListener('click', function (e) {
+  const el = e.target.closest('[data-action]');
+  if (!el) return;
+  const act = el.dataset.action;
+  if (act === 'login') doLogin();
+  else if (act === 'register') doRegister();
+  else if (act === 'cart-add') addCart(+el.dataset.pid);
+  else if (act === 'buy-now') buyNow(+el.dataset.pid);
+  else if (act === 'cart-qty') cartQty(+el.dataset.pid, +el.dataset.qty);
+  else if (act === 'cart-del') cartDel(+el.dataset.pid);
+  else if (act === 'addr-del') addrDel(+el.dataset.id);
+});
+
+function render() {
+  const hash = location.hash.slice(1) || '/';
+  let path = hash.split('?')[0], query = new URLSearchParams(hash.split('?')[1] || '');
+  let fn = routes[path], params = [];
+  if (!fn) {
+    for (const r of Object.keys(routes)) {
+      const m = r.match(/:(\w+)/);
+      if (m) {
+        const pat = new RegExp('^' + r.replace(/:\w+/, '([^/]+)') + '$');
+        const mm = path.match(pat);
+        if (mm) { fn = routes[r]; params = mm.slice(1); break; }
+      }
+    }
+  }
+  document.getElementById('nav').innerHTML = [
+    ['#/','首页'], ['#/search','搜索'], ['#/seckill','秒杀专区'],
+    ['#/cart','购物车'], ['#/orders','我的订单'], ['#/address','地址管理']
+  ].map(([h, t]) => `<a href="${h}" class="${hash.startsWith(h.slice(1)) && h !== '#/' || hash === h && h === '#/' ? 'active' : (h !== '#/' && hash.startsWith(h.slice(1)) ? 'active' : '')}">${t}</a>`).join('');
+  document.getElementById('userbox').innerHTML = store.token
+    ? `<b>${esc(store.phone)}</b><a href="#" onclick="store.logout();return false" style="color:var(--main)">退出</a>`
+    : `<a href="#/login" style="color:var(--main);font-weight:600">登录 / 注册</a>`;
+  (fn || NotFound)(document.getElementById('app'), params[0], query);
+}
+
+function NotFound(app) { app.innerHTML = `<div class="empty" style="padding:120px 0">404 · 页面不存在 <a href="#/" style="color:var(--main)">回首页</a></div>`; }
+
+/* ============ 登录 / 注册 ============ */
+async function doLogin() {
+  try {
+    const d = await api('POST', '/api/auth/login', { phone: v('#phone'), password: v('#pwd') });
+    store.login(d.token, d.userId, v('#phone'));
+    toast('登录成功', 'ok'); location.hash = '#/';
+  } catch (e) { toast((e.message || '登录失败'), 'err'); }
+}
+function Login(app) {
+  app.innerHTML = `<div class="card form"><h3 style="text-align:center">登录</h3>
+    <form onsubmit="doLogin(); return false;">
+    <label>手机号</label><input id="phone" maxlength="11" placeholder="11 位手机号">
+    <label>密码</label><input id="pwd" type="password" placeholder="密码">
+    <button class="btn" type="submit">登 录</button>
+    </form>
+    <div class="switch">没有账号？<a href="#/register">立即注册</a></div></div>`;
+}
+async function doRegister() {
+  try {
+    await api('POST', '/api/auth/register', { phone: v('#phone'), password: v('#pwd'), smsCode: v('#sms') });
+    toast('注册成功，请登录', 'ok'); location.hash = '#/login';
+  } catch (e) { toast(e.message, 'err'); }
+}
+function Register(app) {
+  app.innerHTML = `<div class="card form"><h3 style="text-align:center">注册</h3>
+    <form onsubmit="doRegister(); return false;">
+    <label>手机号</label><input id="phone" maxlength="11" placeholder="11 位手机号">
+    <label>昵称</label><input id="nick" placeholder="昵称">
+    <label>密码</label><input id="pwd" type="password" placeholder="至少 8 位，含字母和数字">
+    <label>短信验证码</label><input id="sms" maxlength="6" placeholder="mock 固定 123456">
+    <button class="btn" type="submit">注 册</button>
+    </form>
+    <div class="switch">已有账号？<a href="#/login">去登录</a></div></div>`;
+}
+const v = sel => document.querySelector(sel).value.trim();
+
+/* ============ 首页 / 商品列表 ============ */
+async function Home(app) {
+  app.innerHTML = `<h2 class="page-title">全部商品</h2><div class="grid" id="grid">加载中…</div>`;
+  try {
+    const d = await api('GET', '/api/products?pageNum=1&pageSize=20');
+    app.querySelector('#grid').innerHTML = (d.records || []).map(cardHtml).join('') || `<div class="empty">暂无商品</div>`;
+  } catch (e) { app.querySelector('#grid').innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+}
+function cardHtml(p) {
+  return `<div class="p-card" onclick="location.hash='#/product/${p.id}'">
+    <div class="p-thumb" style="background:${colorOf(p.id)}">${['☕','👕','🎧','📱','⌚','🎒','👟','💡'][p.id % 8] || '🛍️'}</div>
+    <div class="p-info"><div class="p-name">${esc(p.name)}</div>
+      <div class="p-meta">${esc(p.category)} · ${esc(p.brand)}</div>
+      <div class="p-price"><small>¥</small>${Number(p.price).toFixed(2)}</div></div></div>`;
+}
+
+/* ============ 商品详情 ============ */
+async function ProductDetail(app, id) {
+  app.innerHTML = '加载中…';
+  try {
+    const p = await api('GET', '/api/products/' + id);
+    app.innerHTML = `<div class="card detail">
+      <div class="detail-thumb" style="background:${colorOf(p.id)}">${['☕','👕','🎧','📱','⌚','🎒','👟','💡'][p.id % 8] || '🛍️'}</div>
+      <div style="flex:1">
+        <span class="tag gray">${esc(p.category)}</span> <span class="tag gray">${esc(p.brand)}</span>
+        <h2>${esc(p.name)}</h2>
+        <div class="detail-price"><small>价格 </small>¥${Number(p.price).toFixed(2)}</div>
+        <div class="stock-line">库存 <b>${p.stock > 0 ? p.stock : 0}</b> 件 ${p.stock > 0 ? '· 有货' : '· 已售罄'}</div>
+        <div class="qty-box">
+          <span style="font-size:13px;color:var(--sub)">数量</span>
+          <button class="btn ghost sm" onclick="qtyDelta(-1)">−</button>
+          <input id="qty" value="1" readonly>
+          <button class="btn ghost sm" onclick="qtyDelta(1)">＋</button>
+          <span class="sp"></span>
+          <button class="btn ghost" onclick="addCart(${p.id})" ${store.token ? '' : 'disabled'}>${store.token ? '加入购物车' : '登录后加购'}</button>
+          ${store.token ? `<button class="btn" onclick="buyNow(${p.id})">立即购买</button>` : ''}
+        </div>
+        <div class="muted">多级缓存读链路：Caffeine → Redis → DB · 下单走本地消息表异步扣减</div>
+      </div></div>`;
+    app._pid = p.id;
+  } catch (e) { app.innerHTML = `<div class="empty">${esc(e.message)}</div>`; }
+}
+function qtyDelta(d) { const el = document.querySelector('#qty'); el.value = Math.max(1, (+el.value || 1) + d); }
+async function addCart(pid) {
+  try { await api('POST', '/api/cart', { productId: pid, quantity: +document.querySelector('#qty').value }); toast('已加入购物车', 'ok'); }
+  catch (e) { toast(e.message, 'err'); }
+}
+async function buyNow(pid) {
+  try {
+    const addr = await pickAddress();
+    if (!addr) return;
+    const o = await api('POST', '/api/orders', { addressId: addr, fromCart: false, items: [{ productId: pid, quantity: +document.querySelector('#qty').value }] });
+    toast('下单成功', 'ok'); location.hash = '#/order/' + o.orderNo;
+  } catch (e) { toast(e.message, 'err'); }
+}
+async function pickAddress() {
+  const list = await api('GET', '/api/addresses');
+  if (!list.length) { toast('请先添加收货地址', 'err'); location.hash = '#/address'; return null; }
+  return list[0].id;   // 默认第一条；完整选择器在结算页
+}
+
+/* ============ 搜索 ============ */
+async function Search(app, _p, query) {
+  const q = query.get('q') || '', cat = query.get('category') || '', brand = query.get('brand') || '';
+  app.innerHTML = `
+    <div class="searchbar"><input id="q" placeholder="搜索商品…" value="${esc(q)}"><button class="btn" id="go">搜索</button></div>
+    <div class="card"><div id="facets">加载中…</div>
+    <div class="grid" id="grid" style="margin-top:14px"></div><div id="empty"></div></div>`;
+  const doSearch = async () => {
+    const kw = app.querySelector('#q').value.trim();
+    const usp = new URLSearchParams(); if (kw) usp.set('q', kw); if (cat) usp.set('category', cat);
+    if (brand) usp.set('brand', brand);
+    const d = await api('GET', '/api/search?' + usp.toString());
+    const fc = d.facets || {};
+    const facetHtml = (title, obj, key) => obj ? `<div style="margin:8px 0"><b style="font-size:12.5px">${title}：</b><div class="facets">` +
+      Object.entries(obj).map(([k, n]) => `<span class="chip" onclick="location.hash='#/search?${key}=${encodeURIComponent(k)}'">${esc(k)} (${n})</span>`).join('') + `</div></div>` : '';
+    app.querySelector('#facets').innerHTML =
+      `<span class="muted">共 ${d.total} 件</span>` +
+      facetHtml('分类', fc.categories, 'category') + facetHtml('品牌', fc.brands, 'brand');
+    app.querySelector('#grid').innerHTML = (d.records || []).map(cardHtml).join('');
+    app.querySelector('#empty').innerHTML = d.total === 0 ? `<div class="empty">没有找到相关商品</div>` : '';
+  };
+  app.querySelector('#go').onclick = doSearch;
+  app.querySelector('#q').addEventListener('keydown', e => e.key === 'Enter' && doSearch());
+  await doSearch();
+}
+
+/* ============ 购物车 ============ */
+async function Cart(app) {
+  if (!store.token) return gotoLogin();
+  app.innerHTML = `<div class="card"><h3>购物车</h3><div id="list">加载中…</div>
+    <div class="row" style="margin-top:14px"><span class="sp"></span>
+    <button class="btn" id="checkout">去结算</button></div></div>`;
+  const load = async () => {
+    const list = await api('GET', '/api/cart');
+    if (!list.length) { app.querySelector('#list').innerHTML = `<div class="empty">购物车是空的，<a href="#/" style="color:var(--main)">去逛逛</a></div>`; return; }
+    app.querySelector('#list').innerHTML = `<table><tr><th>商品</th><th>单价</th><th>数量</th><th>小计</th><th>操作</th></tr>` +
+      list.map(i => `<tr>
+        <td><div class="row"><span style="font-size:22px">${['☕','👕','🎧','📱','⌚','🎒','👟','💡'][i.productId % 8] || '🛍️'}</span> ${esc(i.name)}</div></td>
+        <td>${fmt(i.price)}</td>
+        <td><div class="row"><button class="btn ghost sm" onclick="cartQty(${i.productId},${i.quantity - 1})">−</button>
+            <b>${i.quantity}</b>
+            <button class="btn ghost sm" onclick="cartQty(${i.productId},${i.quantity + 1})">＋</button></div></td>
+        <td style="color:var(--main);font-weight:700">${fmt(i.price * i.quantity)}</td>
+        <td><button class="btn gray sm" onclick="cartDel(${i.productId})">删除</button></td></tr>`).join('') + `</table>`;
+    const total = list.filter(i => i.checked !== false).reduce((s, i) => s + i.price * i.quantity, 0);
+    app.querySelector('#checkout').textContent = `去结算（${fmt(total)}）`;
+  };
+  app.querySelector('#checkout').onclick = () => location.hash = '#/checkout';
+  await load();
+}
+async function cartQty(pid, qty) { if (qty < 1) return; try { await api('PUT', `/api/cart/${pid}/qty/${qty}`); render(); } catch (e) { toast(e.message, 'err'); } }
+async function cartDel(pid) { try { await api('DELETE', `/api/cart/${pid}`); toast('已删除'); render(); } catch (e) { toast(e.message, 'err'); } }
+
+/* ============ 地址管理 ============ */
+async function Address(app) {
+  if (!store.token) return gotoLogin();
+  app.innerHTML = `<div class="card"><h3>收货地址</h3><div id="list">加载中…</div>
+    <h3 style="margin-top:20px">新增地址</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px">
+      <div><label>收件人</label><input id="r"></div><div><label>手机号</label><input id="p" maxlength="11"></div>
+      <div><label>省</label><input id="pr"></div><div><label>市</label><input id="c"></div>
+      <div><label>区/县</label><input id="d"></div><div><label>详细地址</label><input id="dt"></div>
+    </div><button class="btn" id="save" style="margin-top:14px">保存地址</button></div>`;
+  const load = async () => {
+    const list = await api('GET', '/api/addresses');
+    app.querySelector('#list').innerHTML = list.length ? `<table><tr><th>收件人</th><th>手机号</th><th>地址</th><th>操作</th></tr>` +
+      list.map(a => `<tr><td>#${a.id} ${esc(a.receiver)}</td><td>${esc(a.phone)}</td>
+        <td>${esc(a.province + a.city + a.district + a.detail)}</td>
+        <td><button class="btn gray sm" onclick="addrDel(${a.id})">删除</button></td></tr>`).join('') + `</table>`
+      : `<div class="muted">还没有地址，先添加一个</div>`;
+  };
+  app.querySelector('#save').onclick = async () => {
+    try {
+      await api('POST', '/api/addresses', { receiver: v('#r'), phone: v('#p'), province: v('#pr'), city: v('#c'), district: v('#d'), detail: v('#dt') });
+      toast('已保存', 'ok'); render();
+    } catch (e) { toast(e.message, 'err'); }
+  };
+  await load();
+}
+async function addrDel(id) { try { await api('DELETE', '/api/addresses/' + id); render(); } catch (e) { toast(e.message, 'err'); } }
+
+/* ============ 下单确认 ============ */
+async function Checkout(app) {
+  if (!store.token) return gotoLogin();
+  app.innerHTML = `<div class="card"><h3>确认订单</h3><div id="box">加载中…</div></div>`;
+  const [list, addrs] = await Promise.all([api('GET', '/api/cart'), api('GET', '/api/addresses')]);
+  const items = list.filter(i => i.checked !== false);
+  if (!items.length) { app.querySelector('#box').innerHTML = `<div class="empty">没有勾选的商品</div>`; return; }
+  const total = items.reduce((s, i) => s + i.price * i.quantity, 0);
+  app.querySelector('#box').innerHTML = `
+    <label>收货地址</label>
+    <select id="addr">${addrs.map(a => `<option value="${a.id}">${esc(a.receiver)} ${esc(a.phone)} · ${esc(a.province + a.city + a.district + a.detail)}</option>`).join('') || '<option>暂无地址</option>'}</select>
+    <table style="margin-top:14px"><tr><th>商品</th><th>数量</th><th>小计</th></tr>
+      ${items.map(i => `<tr><td>${esc(i.name)}</td><td>${i.quantity}</td><td>${fmt(i.price * i.quantity)}</td></tr>`).join('')}</table>
+    <div class="row" style="margin-top:16px"><span class="sp"></span>
+      <span>应付：<b style="color:var(--main);font-size:20px">${fmt(total)}</b></span>
+      <button class="btn" id="submit">提交订单</button></div>`;
+  app.querySelector('#submit').onclick = async () => {
+    try {
+      const o = await api('POST', '/api/orders', {
+        addressId: +document.querySelector('#addr').value, fromCart: true,
+        items: items.map(i => ({ productId: i.productId, quantity: i.quantity }))
+      });
+      toast('下单成功', 'ok'); location.hash = '#/order/' + o.orderNo;
+    } catch (e) { toast(e.message, 'err'); }
+  };
+}
+
+/* ============ 订单列表 / 详情 / 支付 ============ */
+const ST_TAG = { UNPAID: ['orange', '待支付'], PAID: ['green', '已支付'], CANCELLED: ['gray', '已取消'] };
+async function Orders(app) {
+  if (!store.token) return gotoLogin();
+  app.innerHTML = `<div class="card"><h3>我的订单</h3><div id="list">加载中…</div></div>`;
+  const d = await api('GET', '/api/orders?pageNum=1&pageSize=20');
+  const records = d.records || d || [];
+  app.querySelector('#list').innerHTML = records.length ? `<table>
+    <tr><th>订单号</th><th>金额</th><th>状态</th><th>创建时间</th><th>操作</th></tr>` +
+    records.map(o => `<tr>
+      <td><a href="#/order/${o.orderNo}" style="color:var(--main)">${esc(o.orderNo)}</a></td>
+      <td>${fmt(o.payAmount)}</td>
+      <td><span class="tag ${(ST_TAG[o.status] || ['gray'])[0]}">${(ST_TAG[o.status] || ['gray', o.status])[1]}</span></td>
+      <td class="muted">${String(o.createdAt || '').replace('T', ' ').slice(0, 19)}</td>
+      <td>${o.status === 'UNPAID' ? `<button class="btn sm" onclick="location.hash='#/order/${o.orderNo}'">去支付</button>` : `<a class="muted" href="#/order/${o.orderNo}">查看</a>`}</td></tr>`).join('') + `</table>`
+    : `<div class="empty">还没有订单</div>`;
+}
+async function OrderDetail(app, orderNo) {
+  app.innerHTML = '加载中…';
+  const d = await api('GET', '/api/orders/' + orderNo);
+  const o = d.order || d;                       // 兼容嵌套结构 {items, order}
+  const items = d.items || o.items || [];
+  const [tag, label] = ST_TAG[o.status] || ['gray', o.status];
+  app.innerHTML = `
+    <div class="card"><h3>订单详情 <span class="tag ${tag}">${label}</span></h3>
+      <p class="muted">订单号：${esc(o.orderNo)} · 下单时间：${String(o.createdAt || '').replace('T', ' ').slice(0, 19)}</p>
+      <p style="margin-top:6px">收货：${esc(o.addressSnapshot || '-')}</p>
+      <table style="margin-top:12px"><tr><th>商品</th><th>单价</th><th>数量</th><th>小计</th></tr>
+      ${(items).map(i => `<tr><td>${esc(i.name)}</td><td>${fmt(i.price)}</td><td>${i.quantity}</td><td>${fmt(i.subtotal)}</td></tr>`).join('')}</table>
+      <div class="row" style="margin-top:16px"><span class="sp"></span>
+        <span>实付：<b style="color:var(--main);font-size:20px">${fmt(o.payAmount)}</b></span>
+        ${o.status === 'UNPAID' ? `<button class="btn" id="pay">立即支付</button>` : ''}
+        ${o.status === 'UNPAID' ? `<button class="btn gray" id="cancel">取消订单</button>` : ''}</div>
+      <div id="paybox"></div></div>`;
+  const payBtn = app.querySelector('#pay');
+  if (payBtn) payBtn.onclick = async () => {
+    try {
+      const p = await api('POST', '/api/payments/orders/' + o.orderNo);
+      app.querySelector('#paybox').innerHTML = `
+        <div class="card" style="margin-top:14px;background:#fffbe6;border-color:#ffe58f">
+          <b>支付单 #${p.id}</b> · 金额 ${fmt(p.amount)} · 渠道 ${p.channel}
+          <div class="row" style="margin-top:10px">
+            <button class="btn" id="notify">模拟支付成功</button>
+            <span class="muted">幂等：重复点击只生效一次</span></div></div>`;
+      app.querySelector('#notify').onclick = async () => {
+        try {
+          const r = await api('POST', `/api/payments/mock/notify/${p.id}`);
+          toast(r.duplicate ? '重复回调已幂等忽略' : '支付成功', r.duplicate ? '' : 'ok');
+          render();
+        } catch (e) { toast(e.message, 'err'); }
+      };
+    } catch (e) { toast(e.message, 'err'); }
+  };
+  const cancelBtn = app.querySelector('#cancel');
+  if (cancelBtn) cancelBtn.onclick = async () => {
+    try { await api('POST', `/api/orders/${o.orderNo}/cancel`); toast('已取消', 'ok'); render(); }
+    catch (e) { toast(e.message, 'err'); }
+  };
+}
+
+/* ============ 秒杀 ============ */
+async function Seckill(app) {
+  if (!store.token) return gotoLogin();
+  app.innerHTML = `<div class="card">
+    <h3>⚡ 秒杀专区 <span class="muted">令牌防重放 · Lua 分桶预扣 · 限流 5次/s · MQ 异步落库</span></h3>
+    <label>活动商品 ID</label><input id="pid" value="1" style="width:120px">
+    <div class="row" style="margin-top:14px">
+      <button class="btn ghost" id="stock">查分桶余量</button>
+      <button class="btn ghost" id="token">获取幂等令牌</button>
+      <span id="tokenView" class="muted"></span></div>
+    <div class="row" style="margin-top:14px">
+      <label style="margin:0">数量(≤5)</label><input id="qty" value="1" style="width:70px">
+      <label style="margin:0">收货地址</label><select id="addr" style="width:auto;min-width:220px"><option>加载中…</option></select>
+      <button class="btn" id="buy">立即抢购</button></div>
+    <div id="result" style="margin-top:14px"></div>
+    <div class="muted" style="margin-top:10px">提示：重复抢购返回「您已参与过本场活动」；超 5 次/秒返回 429 限流。</div></div>`;
+  try {
+    const alist = await api('GET', '/api/addresses');
+    const sel = app.querySelector('#addr');
+    sel.innerHTML = alist.length ? alist.map(a => `<option value="${a.id}">${esc(a.receiver)} · ${esc(a.province + a.city + a.district + a.detail)}</option>`).join('') : '<option value="">请先到「地址管理」添加地址</option>';
+  } catch (_e) {}
+  app.querySelector('#stock').onclick = async () => {
+    try { const r = await api('GET', '/api/seckill/stock/' + app.querySelector('#pid').value); toast('分桶余量合计：' + r, 'ok'); }
+    catch (e) { toast(e.message, 'err'); }
+  };
+  app.querySelector('#token').onclick = async () => {
+    try { const t = await api('GET', '/api/seckill/token'); app.querySelector('#tokenView').textContent = t.slice(0, 12) + '…'; toast('令牌已获取', 'ok'); }
+    catch (e) { toast(e.message, 'err'); }
+  };
+  app.querySelector('#buy').onclick = async () => {
+    try {
+      const token = await api('GET', '/api/seckill/token');
+      const r = await api('POST', '/api/seckill/orders', {
+        productId: +app.querySelector('#pid').value,
+        addressId: +app.querySelector('#addr').value,
+        quantity: +app.querySelector('#qty').value
+      }, { 'X-Idem-Token': token });
+      app.querySelector('#result').innerHTML = `<div class="card" style="background:#e6f7f1;border-color:#0ca678">
+        <b style="color:var(--ok)">秒杀受理成功！</b> 订单号 <a href="#/order/${r.orderNo}" style="color:var(--main)">${r.orderNo}</a>
+        <div class="muted">MQ 异步落库中，稍后在「我的订单」查看</div></div>`;
+    } catch (e) {
+      app.querySelector('#result').innerHTML = `<div class="card" style="background:#fdeeee;border-color:var(--main)">
+        <b style="color:var(--main)">${esc(e.message)}</b></div>`;
+    }
+  };
+}
+
+/* ============ 登录守卫 ============ */
+function gotoLogin() { toast('请先登录', 'err'); location.hash = '#/login'; }
+
+render();
+</script>
+</body>
+</html>
