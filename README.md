@@ -1,52 +1,125 @@
-# 亿级流量商城 M1（单体版）
+# 亿级流量商城（mall-project）
 
-高并发商城项目第一期：单体跑通核心交易链路，为 M2（微服务化+MQ 异步）/ M3（分库分表+对账）/ M4（大促保障）打地基。
+类京东/淘宝架构的**高并发商城**——从单体跑通到微服务化、分布式化完整演进，每个技术点都有真代码、压测数据与冒烟验证背书。
 
-## 技术栈（M1）
+> 面试定位：京东亿级流量方法论的开源件实证版。同样的缓存漏斗、异步化削峰、Lua 防超卖、最终一致+对账兜底；每一环都亲手实现并量化过代价。
 
-| 项 | 选型 |
+---
+
+## 项目演进（10 个里程碑全部完成 ✅）
+
+| 里程碑 | 内容 | 关键产出 |
+|---|---|---|
+| **M1** | 单体跑通核心交易链路 | 防超卖乐观锁、订单状态机 CAS、支付回调幂等、缓存旁路 |
+| **M1.5** | 秒杀专项升级 | Redis Lua 分桶预扣、幂等令牌、一人一单、限流 |
+| **M2.1** | 微服务化 | 7 服务 + Nacos + Gateway 鉴权路由 + OpenFeign 拆链 |
+| **M2.2** | 分布式事务试点 + 限流 | Seata AT 全局回滚实证、Sentinel 参数级流控语义 |
+| **M2.3** | ES 商品搜索全链路 | IK 分词索引、MQ 增量同步、检索聚合、reindex 对账 |
+| **M2.4** | 压测对比报告 | [docs/BENCH_M2_REPORT.md](docs/BENCH_M2_REPORT.md) |
+| **M3.0** | 订单状态机完善 | 集中校验 + order_status_log 流水审计 |
+| **M3.1** | 去 AT 改最终一致 | 本地消息表 order_stock_task + CAS 抢任务 + 补偿重扫 |
+| **M3.2** | 分库分表 | ShardingSphere 5.5.2 + 基因法路由（订单号末位嵌 user_id 基因） |
+| **M3.3** | 对账中心 | 订单状态闭环对账 + 秒杀库存 Redis↔DB 对账 |
+
+## 架构总览
+
+```
+用户 → Gateway(:9000 鉴权/限流/路由)
+    ├─ mall-user      :8101  注册登录/地址(JWT + 快照)
+    ├─ mall-product   :8112  商品/库存(多级缓存 Caffeine→Redis→DB, 虚拟线程)
+    ├─ mall-cart      :8113  购物车(Redis)
+    ├─ mall-order     :8104  订单/支付(状态机 + 本地消息表 + 分库分表 + 对账)
+    ├─ mall-seckill   :8105  秒杀(分桶 Lua 预扣 + 限流 + MQ 异步落库 + 库存对账)
+    └─ mall-search    :8106  搜索(ES 8.11.4 + IK, MQ 同步 + reindex)
+中间件: Nacos(注册) / Redis / RocketMQ / Seata / Elasticsearch / MySQL×2
+```
+
+**下单链路（最终一致）**：校验+订单落库+任务表落库（同一本地事务）→ afterCommit 发 MQ → 消费端 CAS 抢任务幂等扣减 → 库存不足自动关单+精确回补；补偿任务每 10s 重扫滞留任务，对账任务每 5 分钟闭环校验。
+
+## 技术栈
+
+| 层 | 选型 |
 |---|---|
-| JDK | 21（LTS） |
-| 框架 | Spring Boot 3.5.x |
-| ORM | MyBatis-Plus 3.5.12（spring-boot3-starter） |
-| 数据库 | MySQL 8.0（本机 3306，库 `mall`，账号 root/root） |
-| 缓存 | Redis 7（WSL Ubuntu-24.04，Windows 经 127.0.0.1:6379 直连） |
-| 认证 | JWT（jjwt 0.12） |
-| ID | 雪花算法（自实现，含时钟回拨等待） |
+| 语言/框架 | JDK 21（虚拟线程）+ Spring Boot 3.5 + Spring Cloud 2023 + Alibaba 2023 |
+| 微服务 | Nacos 注册发现 · Spring Cloud Gateway · OpenFeign + LoadBalancer |
+| 数据 | MySQL 8.0 × 2 库 · **ShardingSphere-JDBC 5.5.2**（编程式配置）· MyBatis-Plus |
+| 缓存 | Redis 7（分桶 Lua/幂等/购物车/缓存）+ Caffeine 本地缓存 |
+| 消息 | RocketMQ 5（事务消息思路/异步落库/增量同步/补偿重扫） |
+| 搜索 | Elasticsearch 8.11.4 + IK（ik_max_word 索引 / ik_smart 检索） |
+| 事务 | 本地消息表最终一致（主）· Seata AT 已试点并实测代价后退场 |
+| 弹性 | Redis+Lua 滑动窗口限流（Sentinel ParamFlow 语义）· 幂等令牌 · CAS 状态机 |
+| 部署 | Docker Compose（Nacos/Redis/RocketMQ/Seata/ES）· restart: always |
 
-## 核心设计点（面试讲点）
+## 核心实测数据（单机同口径纵向对比）
 
-- **防超卖基线**：`UPDATE product SET stock=stock-? WHERE id=? AND stock>=?` 乐观锁，影响行数=0 即库存不足
-- **订单状态机 CAS**：`UPDATE orders SET status=#{to} WHERE order_no=? AND status=#{from}`——并发支付/取消只有一方生效，天然幂等
-- **支付回调三重防资损**：支付单 CAS 幂等 → 金额校验 → 订单状态机二次 CAS；重复回调返回 duplicate=true
-- **缓存旁路 + 空值防穿透**：详情读 Redis→DB→回填；不存在商品缓存 60s 空值
-- **超时关单**：定时扫描 + Redis 分布式锁防多实例重复关（M2 换 RocketMQ 延迟消息）
-- **快照设计**：订单固化地址/商品名/单价，防后续变更影响历史单
+| 指标 | M1 单体 | M3 现状 |
+|---|---|---|
+| 同步下单 QPS | 167.6 | 22.5（AT 时期实测；M3.1 去 AT 后回升，详见报告） |
+| 缓存热读 QPS | 5224~6504 | **3036.8**（P99 47.6ms，2500 请求 0 失败） |
+| 秒杀受理 TPS | — | **89.1**（P99 116.2ms） |
+| 防超卖 | 0 超卖 | **0 超卖**（受理=Redis=DB 三方核对） |
+| 分片路由正确率 | — | 新单 3/3 ✓（基因法同片闭环） |
+| 对账 | — | drift=0（活动口径） |
+
+> **关键架构结论**（有数据背书的面试讲点）：Seata AT 使下单吞吐 -86.6%（167.6→22.5 QPS），这正是京东骨干链路不用强一致分布式事务、而用「本地消息表+对账兜底」的量化注脚。
 
 ## 快速开始
 
 ```bash
-# 1. 建库建表（幂等）
+# 0. 基础设施（Docker Compose：Nacos/Redis/RocketMQ/Seata/ES）
+cd deploy && docker compose up -d && cd ..
+# ES 首次需装 IK（容器内执行）
+docker exec mall-es sh /install-ik.sh
+
+# 1. 建库建表（mall + mall_shard1 + 分表，幂等）
 mysql -uroot -proot < sql/schema.sql
+mysql -uroot -proot mall < sql/V3_0__order_status_log.sql
+mysql -uroot -proot mall < sql/V3_1__order_stock_task.sql
 
-# 2. 启动 Redis（WSL，已装则跳过）
-wsl -d Ubuntu-24.04 -u root -- service redis-server start
-
-# 3. 编译打包
+# 2. 编译打包（8 模块）
 mvn.cmd clean package -DskipTests
 
-# 4. 启动（8080 端口）
-java -jar target/mall-monolith-1.0.0.jar
-```
+# 3. 按序启动 7 服务（见架构图端口）
+java -jar mall-user-service/target/mall-user-service-2.0.0.jar
+java -jar mall-product-service/target/mall-product-service-2.0.0.jar
+# ... cart/order/seckill/search/gateway 同理
 
-## 测试
-
-```bash
-# 全链路冒烟：注册→登录→地址→加购→下单→支付→重复回调幂等→购物车清理
+# 4. 全链路冒烟（16 步：注册→登录→地址→加购→下单→支付幂等→秒杀限购→AT回滚语义→ES→对账）
 python scripts/mall_bench.py smoke
 
-# 并发下单基线压测（QPS/P99/错误分布/库存消耗核对）
-python scripts/mall_bench.py bench --threads 50 --total 500 --product-id 1
+# 5. 压测（同步下单 / 秒杀）
+python scripts/mall_bench.py bench --total 300
+python scripts/mall_bench.py bench --bench-mode seckill --threads 30 --total 200 --product-id 3
 ```
 
-mock 验证码固定 `123456`；mock 支付回调 `POST /api/payments/mock/notify/{paymentId}`。
+## 目录结构
+
+```
+├── mall-common/            公共：JWT/雪花ID(基因法)/MQ常量/限流切面/异常处理
+├── mall-gateway/           网关：路由/JWT校验/白名单
+├── mall-user-service/      用户：注册登录/地址
+├── mall-product-service/   商品：详情多级缓存/库存扣减/变更事件/MQ
+├── mall-cart-service/      购物车：Redis Hash
+├── mall-order-service/     订单：状态机/本地消息表/分库分表/秒杀单消费/对账
+├── mall-seckill-service/   秒杀：分桶Lua/限流幂等/库存对账
+├── mall-search-service/    搜索：ES索引/同步/检索聚合
+├── deploy/                 docker-compose.yml + ES/IK 安装脚本 + RocketMQ 配置
+├── sql/                    建表脚本（schema + V3.x 增量）
+├── scripts/                mall_bench.py 冒烟/压测 一体化脚本
+└── docs/                   方案文档×4 + 压测报告 + 进度看板 + 功能清单(12板块60功能点)
+```
+
+## 文档索引
+
+| 文档 | 内容 |
+|---|---|
+| [docs/亿级流量商城技术方案_v1.md](docs/亿级流量商城技术方案_v1.md) | 总体方案：选型/架构/八大技术专题/考点映射 |
+| [docs/功能板块与功能点清单_v1.md](docs/功能板块与功能点清单_v1.md) | 12 板块 60 功能点清单与里程碑映射 |
+| [docs/BENCH_M2_REPORT.md](docs/BENCH_M2_REPORT.md) | 压测对比报告（含 Seata -86.6% 归因） |
+| [docs/PENDING_TASKS.md](docs/PENDING_TASKS.md) | 未完成任务与基线数据速查 |
+| [docs/PROGRESS_M2.1.md](docs/PROGRESS_M2.1.md) | 环境坑/构建铁律/端口表 |
+
+## 环境要求
+
+- JDK 21 · Maven 3.9+ · Docker Desktop · MySQL 8.0（root/root）· Python 3.11（冒烟/压测）
+- Windows 开发注意：git-bash 下用 `mvn.cmd`；系统代理会让 localhost curl 502，用 `--noproxy '*'`
