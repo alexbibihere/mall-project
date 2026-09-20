@@ -118,6 +118,7 @@ python scripts/mall_bench.py bench --bench-mode seckill --threads 30 --total 200
 | [docs/亿级流量商城技术方案_v1.md](docs/亿级流量商城技术方案_v1.md) | 总体方案：选型/架构/八大技术专题/考点映射 |
 | [docs/功能板块与功能点清单_v1.md](docs/功能板块与功能点清单_v1.md) | 12 板块 60 功能点清单与里程碑映射 |
 | [docs/BENCH_M2_REPORT.md](docs/BENCH_M2_REPORT.md) | 压测对比报告（含 Seata -86.6% 归因） |
+| [docs/INTERVIEW_GUIDE.md](docs/INTERVIEW_GUIDE.md) | ⭐ 面试叙事手册：架构/理念/追问弹药库 |
 | [docs/PENDING_TASKS.md](docs/PENDING_TASKS.md) | 未完成任务与基线数据速查 |
 | [docs/PROGRESS_M2.1.md](docs/PROGRESS_M2.1.md) | 环境坑/构建铁律/端口表 |
 
