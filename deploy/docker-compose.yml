@@ -59,5 +59,16 @@ services:
       timeout: 5s
       retries: 10
 
+  # M2.2: Seata TC server（standalone file 模式）；控制台 UI http://localhost:7091
+  seata-server:
+    image: docker.m.daocloud.io/seataio/seata-server:2.0.0
+    container_name: mall-seata
+    ports:
+      - "8091:8091"
+      - "7091:7091"
+    environment:
+      SEATA_PORT: "8091"
+    restart: always
+
 volumes:
   redis-data:

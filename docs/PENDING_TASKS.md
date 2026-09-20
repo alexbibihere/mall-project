@@ -1,31 +1,33 @@
 # 未完成任务进度列表（PENDING TASKS）
 
-> 创建：2026-09-20 ｜ 配套看板：[PROGRESS_M2.1.md](PROGRESS_M2.1.md)
+> 创建：2026-09-20 ｜ **更新：P0 收尾全部完成（含 Seata 损耗实测 -86.6%）** ｜ 配套看板：[PROGRESS_M2.1.md](PROGRESS_M2.1.md)
 > 里程碑进度：M1 ✅ → M1.5 ✅ → M2.1 ✅ (5795e21) → **M2.2 ✅ (f692a95)** → M2.3 ⬜ → M2.4 ⬜
 
 ---
 
-## P0 · M2.2 收尾（下次会话第一步，预计 30 分钟）
+## P0 · M2.2 收尾 ✅ 全部完成（2026-09-20，git 见 log）
 
-### ⬜ 1. 删除死代码 `RateLimitAspect.java`
+### ✅ 1. 删除死代码 `RateLimitAspect.java`
 - 现状：M2.2 已被 `ParamFlowRuleManager` 取代，grep 全仓 **0 引用**（2026-09-20 已核实）
 - 位置：`mall-common/src/main/java/com/mall/common/aspect/RateLimitAspect.java`
 - 动作：直接删除；`@RateLimit` / `@Idempotent` 注解保留（还在用）
 - 验收：`mvn.cmd -q package -DskipTests` 全绿 + 冒烟第 9/10 步（限流/幂等）不回归
 
-### ⬜ 2. 清理 `LegacyAuthInterceptor.java`
+### ✅ 2. 清理 `LegacyAuthInterceptor.java`
 - 现状：grep 全仓 **0 引用**，疑似 M2.1 迁移时的旧版备份（2026-09-20 已核实）
 - 位置：`mall-common/src/main/java/com/mall/common/LegacyAuthInterceptor.java`
 - 动作：人工确认后删除；顺带检查 `mall-common` 里 `com.mall.cart.view.CartItemView` 放 common 是否合理（cart 专属 DTO 下沉 common 的理由，面试会被问）
 
-### ⬜ 3. seata 纳入 docker-compose
+### ✅ 3. seata 纳入 docker-compose
 - 现状：seata-server 是 `docker run` 手工起的裸容器（无 `--restart` 策略，机器重启不自启）；`deploy/docker-compose.yml` 里只有 redis/namesrv/broker/nacos
 - 动作：compose 增加 `seata-server` 服务（镜像 `docker.m.daocloud.io/seataio/seata-server:2.0.0`），顺手补 `- 7091:7091`（控制台 UI，当前宿主机访问不了）
 - 验收：`docker compose down && docker compose up -d` 一条命令拉起全套基础设施
 
-### ⬜ 4. Seata 接入后的性能损耗速测（喂给 M2.4）
-- 现状：同步下单链路已挂 `@GlobalTransactional`，AT 模式有 undo_log 写入 + 二阶段通信开销，损耗未知
-- 动作：`python scripts/mall_bench.py bench --total 500` 跑一轮，与 M1 基线（同步 QPS 167.6 / P99 523ms）对比，数字记入本文档 P2 素材区
+### ✅ 4. Seata AT 性能损耗实测（2026-09-20，threads=50 total=300）
+
+**结果：QPS 22.5（M1 单体 167.6，-86.6%）｜ P99 4286.7ms（M1 523ms）｜ 300/300 成功**
+
+损耗归因（order 日志实证）：每笔订单 AT 全链 = 分支注册×4 + undo_log 前后镜像×4 + TC 往返×3（begin/register/commit），日志 5+ 条/单；叠加 Feign 串行 4 跳。秒杀链路（Redis 预扣 + MQ 异步）不受 AT 影响。优化方向：TCC / 消息最终一致——M2.4 报告核心素材已就位。
 
 ---
 
@@ -64,8 +66,8 @@
 
 | 指标 | M1 单体 | M2 微服务 |
 |---|---|---|
-| 同步下单 QPS | 167.6 | ⬜ 待测（P0-4） |
-| 同步下单 P99 | 523ms | ⬜ 待测 |
+| 同步下单 QPS | 167.6 | **22.5**（含 Seata AT，P0-4 实测） |
+| 同步下单 P99 | 523ms | 4286.7ms |
 | 秒杀受理 P99 | 80ms | ⬜ 待测 |
 | 缓存热读 QPS | 5224~6504 | ⬜ 待测 |
 | 超卖 | 0 | 0（冒烟持续验证） |
