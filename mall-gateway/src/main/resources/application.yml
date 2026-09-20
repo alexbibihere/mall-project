@@ -1,0 +1,42 @@
+server:
+  port: 9000
+
+spring:
+  application:
+    name: mall-gateway
+  cloud:
+    compatibility-verifier:
+      enabled: false
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+    gateway:
+      routes:
+        - id: user
+          uri: lb://mall-user
+          predicates: [ "Path=/api/auth/**,/api/addresses/**" ]
+        - id: product
+          uri: lb://mall-product
+          predicates: [ "Path=/api/products/**" ]
+        - id: cart
+          uri: lb://mall-cart
+          predicates: [ "Path=/api/cart/**" ]
+        - id: order
+          uri: lb://mall-order
+          predicates: [ "Path=/api/orders/**,/api/payments/**" ]
+        - id: seckill
+          uri: lb://mall-seckill
+          predicates: [ "Path=/api/seckill/**" ]
+      discovery:
+        locator:
+          enabled: false
+
+mall:
+  jwt:
+    secret: mall-dev-secret-key-please-change-in-prod-0123456789abcdef
+
+auth:
+  whitelist:
+    - /api/auth
+    - /api/products
+    - /api/payments/mock

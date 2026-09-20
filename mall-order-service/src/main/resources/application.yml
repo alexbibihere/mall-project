@@ -1,0 +1,52 @@
+server:
+  port: 8104
+
+spring:
+  application:
+    name: mall-order
+  cloud:
+    compatibility-verifier:
+      enabled: false
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/mall?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    hikari:
+      maximum-pool-size: 50
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000
+      lettuce:
+        pool:
+          max-active: 64
+          max-idle: 32
+          min-idle: 8
+  jackson:
+    time-zone: Asia/Shanghai
+
+rocketmq:
+  name-server: localhost:9876
+  producer:
+    group: mall-producer-group
+    send-message-timeout: 3000
+    retry-times-when-send-failed: 2
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+  global-config:
+    banner: false
+    db-config:
+      id-type: auto
+
+mall:
+  jwt:
+    secret: mall-dev-secret-key-please-change-in-prod-0123456789abcdef
+    expire-hours: 72

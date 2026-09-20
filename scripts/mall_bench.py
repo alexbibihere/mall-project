@@ -18,7 +18,7 @@ import time
 from http.client import HTTPConnection
 
 BASE_HOST = "127.0.0.1"
-BASE_PORT = 8080
+BASE_PORT = 9000  # M2: 经网关访问（单体时代为 8080）
 
 
 class Client:
@@ -89,10 +89,12 @@ def smoke():
     assert r["code"] == 0, r
     print(f"[4] 加购 OK")
 
-    st, r = c.request("POST", "/api/orders", {"addressId": address_id, "fromCart": True})
+    st, r = c.request("POST", "/api/orders",
+                      {"addressId": address_id, "fromCart": True,
+                       "items": [{"productId": pid, "quantity": 2}]})
     assert r["code"] == 0, r
     order_no = r["data"]["orderNo"]
-    print(f"[5] 购物车结算下单 OK orderNo={order_no}")
+    print(f"[5] 下单 OK orderNo={order_no}")
 
     st, r = c.request("POST", f"/api/payments/orders/{order_no}")
     assert r["code"] == 0, r
@@ -134,13 +136,14 @@ def smoke():
     assert r["code"] == 409, r
     print(f"[10] 限购拦截(一人一单) OK")
 
-    # 轮询异步落库结果（MQ 有积压时可能要等几十秒）
+    # 轮询异步落库结果（MQ 有积压时可能要等几十秒）；M2.1 订单查询已归属 mall-order
     final = None
     for _ in range(150):
-        st, r = c.request("GET", f"/api/seckill/orders/{sk_order_no}")
+        st, r = c.request("GET", f"/api/orders/{sk_order_no}")
         assert r["code"] == 0, r
-        if r["data"]["status"] != "PROCESSING":
-            final = r["data"]
+        status = r["data"]["order"]["status"]
+        if status != "PROCESSING":
+            final = dict(r["data"]["order"], status=status)
             break
         time.sleep(0.2)
     assert final and final["status"] == "UNPAID", f"秒杀单未落库: {final}"

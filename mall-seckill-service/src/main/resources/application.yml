@@ -1,0 +1,32 @@
+server:
+  port: 8105
+
+spring:
+  application:
+    name: mall-seckill
+  cloud:
+    compatibility-verifier:
+      enabled: false
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      timeout: 2000
+
+rocketmq:
+  name-server: localhost:9876
+  producer:
+    group: mall-seckill-producer-group
+    send-message-timeout: 3000
+    retry-times-when-send-failed: 2
+
+seckill:
+  bucket-count: 10
+
+mall:
+  jwt:
+    secret: mall-dev-secret-key-please-change-in-prod-0123456789abcdef
+    expire-hours: 72

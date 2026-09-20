@@ -24,18 +24,12 @@ services:
     environment:
       JAVA_OPT_EXT: "-Xms256m -Xmx256m"
     restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "netstat -tln | grep 9876 || exit 1"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
 
   rocketmq-broker:
     image: docker.m.daocloud.io/apache/rocketmq:5.5.0
     container_name: mall-broker
     depends_on:
-      rocketmq-namesrv:
-        condition: service_started
+      - rocketmq-namesrv
     ports:
       - "10909:10909"
       - "10911:10911"
@@ -46,6 +40,24 @@ services:
     environment:
       JAVA_OPT_EXT: "-Xms512m -Xmx512m"
     restart: always
+
+  nacos:
+    image: docker.m.daocloud.io/nacos/nacos-server:v2.4.3
+    container_name: mall-nacos
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+    environment:
+      MODE: standalone
+      NACOS_AUTH_ENABLE: "false"
+      JVM_XMS: "256m"
+      JVM_XMX: "256m"
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8848/nacos/v1/console/health/readiness || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
 
 volumes:
   redis-data:
