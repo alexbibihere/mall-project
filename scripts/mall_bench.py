@@ -158,8 +158,9 @@ def smoke():
     db_stock = r["data"]["stock"]
     print(f"[12] 分桶余量=9 ✓  DB库存={db_stock}（已同步扣1）✓")
 
-    # ---- M2.3 前置：Seata AT 全局回滚验证（跨服务扣减的回补）----
-    # 动态构造超量：先查当前余量 X，一次买 X+1 件 -> 第1分支成功、第2分支失败 -> 全局回滚
+    # ---- M3 前置：Seata 已退场，改为「最终一致」语义验证 ----
+    # 动态构造超量：先查余量 X，一次买 X+1 件 -> 同步受理成功（乐观预检通过），
+    # 异步扣减第 2 行失败 -> 订单被关单回补 -> 库存回到 X
     low = 4
     st, r = c.request("GET", f"/api/products/{low}")
     assert r["code"] == 0, r
@@ -170,12 +171,29 @@ def smoke():
                       {"addressId": address_id,
                        "items": [{"productId": low, "quantity": stock_before - 1},
                                  {"productId": low, "quantity": 2}]})
-    assert r["code"] == 409 and "库存不足" in r["message"], r
-    print(f"[13] Seata AT 全局回滚 OK（跨服务扣减已回补）✓")
+    assert r["code"] == 0, f"受理应成功(异步扣减): {r}"
+    order_no = r["data"]["orderNo"]
+    print(f"[13] 超量下单受理 OK orderNo={order_no}（异步扣减语义）✓")
 
-    st, r = c.request("GET", f"/api/products/{low}")
-    assert r["code"] == 0 and r["data"]["stock"] == stock_before, (stock_before, r)
-    print(f"[14] 库存回补一致性 OK stock={r['data']['stock']}（与扣减前一致）✓")
+    # 轮询：以订单状态 CANCELLED 为准（关单是回补之后的最后一刻），再核对库存
+    final_stock = None
+    st, r = c.request("GET", f"/api/orders/{order_no}")
+    for _ in range(100):
+        st, r = c.request("GET", f"/api/orders/{order_no}")
+        assert r["code"] == 0, r
+        if r["data"]["order"]["status"] == "CANCELLED":
+            break
+        time.sleep(0.2)
+    assert r["data"]["order"]["status"] == "CANCELLED", r["data"]["order"]["status"]
+    for _ in range(50):
+        st, r = c.request("GET", f"/api/products/{low}")
+        assert r["code"] == 0, r
+        final_stock = r["data"]["stock"]
+        if final_stock == stock_before:
+            break
+        time.sleep(0.2)
+    assert final_stock == stock_before, (stock_before, final_stock)
+    print(f"[14] 库存不足自动关单+精确回补 OK stock={final_stock}（与扣减前一致）✓")
 
     # ---- M2.3 ES 搜索链路：分词检索 + facets 聚合 + MQ 增量同步 ----
     from urllib.parse import quote

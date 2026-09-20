@@ -6,6 +6,7 @@ import com.mall.order.entity.Order;
 import com.mall.order.entity.Payment;
 import com.mall.order.mapper.OrderMapper;
 import com.mall.order.mapper.PaymentMapper;
+import com.mall.order.service.OrderStateMachine;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ public class PaymentService {
     private final PaymentMapper paymentMapper;
     private final OrderMapper orderMapper;
     private final OrderService orderService;
+    private final OrderStateMachine stateMachine;
 
     /** 创建支付单（同一订单存在未过期 UNPAID 支付单则复用）。 */
     @Transactional
@@ -84,9 +86,10 @@ public class PaymentService {
         if (order == null || order.getPayAmount().compareTo(p.getAmount()) != 0) {
             throw BizException.of(500, "回调金额异常");
         }
-        // ③ 订单状态机 CAS：UNPAID -> PAID；与取消/关单并发时只有一方胜出
-        int orderAffected = orderMapper.casStatus(order.getOrderNo(), Order.ST_UNPAID, Order.ST_PAID);
-        if (orderAffected == 0) {
+        // ③ 订单状态机：UNPAID -> PAID；与取消/关单并发时只有一方胜出
+        boolean transit = stateMachine.transit(order.getOrderNo(), Order.ST_UNPAID, Order.ST_PAID,
+                "PAY_NOTIFY", "system");
+        if (!transit) {
             // 订单已被取消但钱已付：M1 记日志走人工；M2 自动转退款单
             log.warn("CONFLICT: paid but order cancelled, orderNo={}", order.getOrderNo());
             throw BizException.of(409, "订单已取消，支付转退款处理");
