@@ -85,6 +85,7 @@ public class OrderService {
             }
             Map<String, Object> p = r.getData();
             OrderItem oi = new OrderItem();
+            oi.setUserId(userId); // M3.2 分片键冗余
             oi.setProductId(Long.valueOf(String.valueOf(p.get("id")))); // JSON 数字可能反序列化为 Integer，统一经字符串转
             oi.setName(String.valueOf(p.get("name")));
             oi.setPrice(new BigDecimal(String.valueOf(p.get("price"))));
@@ -109,7 +110,7 @@ public class OrderService {
         // 4. 订单落库（快照固化）
         Order order = new Order();
         order.setUserId(userId);
-        order.setOrderNo(idGen.nextOrderNo());
+        order.setOrderNo(idGen.nextOrderNo(userId)); // 基因法：末位=user_id%10，分片路由用
         order.setAddressSnapshot(addressSnapshot);
         BigDecimal total = orderItems.stream().map(OrderItem::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);

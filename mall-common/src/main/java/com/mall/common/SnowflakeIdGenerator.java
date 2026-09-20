@@ -52,4 +52,13 @@ public class SnowflakeIdGenerator {
     public String nextOrderNo() {
         return "SO" + nextId();
     }
+
+    /**
+     * M3.2 基因法：订单号末位 = user_id % 10（基因）。
+     * 分库分表按订单号末位路由 => buyer 维度与订单号维度天然同片，无需跨片查询。
+     */
+    public String nextOrderNo(long userId) {
+        long gene = Math.abs(userId % 10);
+        return "SO" + nextId() + gene;
+    }
 }

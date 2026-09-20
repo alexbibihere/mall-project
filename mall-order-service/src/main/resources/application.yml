@@ -11,8 +11,9 @@ spring:
       discovery:
         server-addr: localhost:8848
   datasource:
+    # M3.2: 实际数据源由 ShardingSphereConfig Java Bean 提供（编程式构建，绕开 snakeyaml 版本冲突）
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/mall?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/mall?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     password: root
     hikari:
@@ -37,10 +38,7 @@ rocketmq:
     send-message-timeout: 3000
     retry-times-when-send-failed: 2
 
-seata:
-  enabled: true
-  application-id: mall-order
-  tx-service-group: mall_tx_group
+# M3.2: Seata 已退场（M3.1 改本地消息表最终一致），数据源改由 ShardingSphere 托管（见下方 spring.datasource 指向 ss 配置）
   service:
     vgroup-mapping:
       mall_tx_group: default

@@ -52,10 +52,28 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-validation</artifactId>
     </dependency>
+    <!-- M3.2: ShardingSphere-JDBC 订单分库分表（基因法路由）；5.5.x 起兼容 snakeyaml 2.x，且坐标改名 shardingsphere-jdbc -->
     <dependency>
-      <groupId>io.seata</groupId>
-      <artifactId>seata-spring-boot-starter</artifactId>
-      <version>${seata.version}</version>
+      <groupId>org.apache.shardingsphere</groupId>
+      <artifactId>shardingsphere-jdbc</artifactId>
+      <version>5.5.2</version>
+    </dependency>
+    <!-- SS 5.5.2 内核引用 reactor 但传递依赖缺失（NoClassDefFoundError: reactor/core/Exceptions） -->
+    <dependency>
+      <groupId>io.projectreactor</groupId>
+      <artifactId>reactor-core</artifactId>
+      <version>3.6.11</version>
+    </dependency>
+    <!-- SS YAML 解析依赖 JAXB（JDK 9+ 已移除，需显式引入运行时） -->
+    <dependency>
+      <groupId>javax.xml.bind</groupId>
+      <artifactId>jaxb-api</artifactId>
+      <version>2.3.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>jaxb-runtime</artifactId>
+      <version>2.3.9</version>
     </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
